@@ -1,0 +1,33 @@
+<svg>
+  <use href="#scrollview">
+
+  
+    <use href="#scrollview-item" height="40%">
+
+      <use id="mixedtext" href="#mixed-text-left-top" height="100%" fill="fb-blue">
+        <set href="#copy/text" attributeName="text-buffer"
+        to="Press the button below to start recording a session."/>
+      </use>
+
+    </use>
+
+
+    <use href="#scrollview-item" height="30%">
+
+      <use id="startSessionButton" href="#square-button" y="0" fill="fb-green">
+        <set href="#text" attributeName="text-buffer" to="Start Session" />
+      </use>
+
+    </use>
+
+    <use href="#scrollview-item" height="30%">
+
+      <use id="recordingsButton" href="#square-button" y="0" fill="fb-blue">
+        <set href="#text" attributeName="text-buffer" to="Recordings" />
+      </use>
+
+    </use>
+
+  </use>
+</svg>
+
