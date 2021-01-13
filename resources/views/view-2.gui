@@ -1,0 +1,20 @@
+<svg viewport-fill="black">
+  <use href="#scrollview">
+
+    <use href="#scrollview-item" height="70%">
+      <!-- Welcome Header and Description -->
+      <use id="mixedtext" href="#mixed-text-left-top" height="100%" fill="fb-red">
+        <set href="#header/text" attributeName="text-buffer" to="Recording..."/>
+        <set href="#copy/text" attributeName="text-buffer" to="Press the button to stop the session."/>
+      </use>
+    </use>
+
+    <use href="#scrollview-item" height="30%">
+      <!-- Start Session Button -->
+      <use id="stopSessionButton" href="#square-button" fill="fb-red">
+        <set href="#text" attributeName="text-buffer" to="Stop Session" />
+      </use>
+    </use>
+
+  </use>
+</svg>

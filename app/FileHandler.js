@@ -22,7 +22,7 @@ export default class FileHandler {
         let path = `${this.LOCAL_PATH}${fileName}`
         return fs.existsSync(path)
     }
-    
+
     renameFile(oldName, newName) {
         fs.renameSync(oldName, newName);
     }
@@ -43,6 +43,18 @@ export default class FileHandler {
         while((dirIter = listDir.next()) && !dirIter.done) {
             this.deleteFile(dirIter.value);
         }   
+    }
+
+    listAllFiles() {
+        const listDir = listDirSync(this.LOCAL_PATH);
+        var files = [];
+
+        let dirIter = null;
+        while((dirIter = listDir.next()) && !dirIter.done) {
+            files.push(dirIter.value);
+        }
+
+        return files;
     }
 
     deleteFile(fileName) {

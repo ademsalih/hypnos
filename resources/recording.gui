@@ -1,23 +1,17 @@
 <svg>
   <use href="#scrollview">
-
   
-    <use href="#scrollview-item" height="70%">
-
-      <use id="mixedtext" href="#mixed-text-left-top" height="100%" fill="fb-blue">
-        <set href="#header/text" attributeName="text-buffer" to="Welcome!"/>
-        <set href="#copy/text" attributeName="text-buffer" to="Press the button below to start recording a session."/>
+    <use href="#scrollview-item" height="72%">
+      <use id="mixedtext" href="#mixed-text-left-top" height="100%" fill="fb-red">
+        <set href="#header/text" attributeName="text-buffer" to="Recording..."/>
+        <set href="#copy/text" attributeName="text-buffer" to="Recording your sleep. Press the button below to stop."/>
       </use>
-
     </use>
 
-
-    <use href="#scrollview-item" height="30%">
-
-      <use id="startSessionButton" href="#square-button" y="0" fill="fb-blue">
-        <set href="#text" attributeName="text-buffer" to="Start Session" />
+    <use href="#scrollview-item" height="28%">
+      <use id="startSessionButton" href="#square-button" y="0" fill="fb-red">
+        <set href="#text" attributeName="text-buffer" to="Stop Session" />
       </use>
-
     </use>
 
   </use>
