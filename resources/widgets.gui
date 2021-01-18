@@ -1,29 +1,23 @@
 <svg>
-  <!-- Mixed Text -->
   <defs>
     <link rel="stylesheet" href="styles.css" />
     <link rel="import" href="/mnt/sysassets/widgets_common.gui" />
-    <!-- Additional Imports -->
+
+    <!-- Mixed Text -->
     <link rel="stylesheet" href="/mnt/sysassets/widgets/dynamic_textarea.css"/>
     <link rel="import" href="/mnt/sysassets/widgets/dynamic_textarea.gui"/>
     <link rel="import" href="/mnt/sysassets/widgets/mixed_text_widget.gui"/>
-  </defs>
-
-  <!-- Square Button -->
-  <defs>
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="import" href="/mnt/sysassets/widgets_common.gui" />
-    <!-- Additional Imports -->
+    
+    <!-- Square Button -->
     <link rel="import" href="/mnt/sysassets/widgets/square_button_widget.gui" />
-  </defs>
 
-  <!-- Scroll View -->
-  <defs>
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="import" href="/mnt/sysassets/widgets_common.gui" />
-    <!-- Additional Imports -->
+    <!-- Scroll View -->
     <link rel="import" href="/mnt/sysassets/widgets/baseview_widget.gui" />
     <link rel="import" href="/mnt/sysassets/widgets/scrollview_widget.gui" />
-  </defs>
 
+    <!-- Tile List -->
+    <link rel="import" href="/mnt/sysassets/widgets/baseview_widget.gui" />
+    <link rel="import" href="/mnt/sysassets/widgets/tile_list_widget.gui" />
+
+  </defs>
 </svg>

@@ -31,6 +31,26 @@ export default class FileHandler {
         fs.writeFileSync(fileName, content, "ascii");
     }
 
+    readRawFile(fileName) {
+        let file = fs.openSync(fileName, "r")
+        let buffer = new ArrayBuffer(this.fileSize(fileName));
+        fs.readSync(file, buffer);
+        let bytes = new Float64Array(buffer);
+
+        return bytes;
+    }
+
+    readFile(fileName) {
+        let bytes = this.readRawFile(fileName);
+
+        let s = ""
+        for (var i = 0; i < bytes.length; i++) {
+            s += bytes[i] + "\n"
+        }
+        fs.closeSync(file);
+        return s;
+    }
+
     appendToFile(fileName, buffer) {
         let file = fs.openSync(fileName, "a+");
         fs.writeSync(file, buffer);
@@ -45,7 +65,7 @@ export default class FileHandler {
         }   
     }
 
-    listAllFiles() {
+    allFiles() {
         const listDir = listDirSync(this.LOCAL_PATH);
         var files = [];
 
