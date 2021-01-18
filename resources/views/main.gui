@@ -3,8 +3,8 @@
 
     <use href="#scrollview-item" height="33%">
       <!-- Start Session Button -->
-      <use id="startSessionButton" href="#square-button" fill="fb-blue">
-        <set href="#text" attributeName="text-buffer" to="New Sesion" />
+      <use id="newSessionButton" href="#square-button" fill="fb-blue">
+        <set href="#text" attributeName="text-buffer" to="New Session" />
       </use>
     </use>
 

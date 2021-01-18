@@ -1,0 +1,22 @@
+<svg viewport-fill="black">
+  <use href="#scrollview">
+
+    <use href="#scrollview-item" height="70%">
+      <!-- Welcome Header and Description -->
+      <use id="sessionMixedText" href="#mixed-text-left-top" height="100%" fill="fb-blue">
+        <set href="#header/text" attributeName="text-buffer" to="New Session"/>
+        <set href="#copy/text" attributeName="text-buffer" to="Press the button below to start a new session."/>
+      </use>
+    </use>
+
+    <use href="#scrollview-item" height="30%">
+
+      <!-- Session Control Button -->
+      <use id="sessionControlButton" href="#square-button" fill="fb-blue">
+        <set href="#text" attributeName="text-buffer" to="Start Session" />
+      </use>
+
+    </use>
+
+  </use>
+</svg>
