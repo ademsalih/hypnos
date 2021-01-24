@@ -1,0 +1,28 @@
+<svg>
+    <defs>
+        <symbol id="my-tile-item" href="#tile-list-item" focusable="false" pointer-events="none" system-events="all" display="none">
+            <text id="sampling-text-main" />
+            <text id="sampling-text-secondary" />
+            <rect id="tile-divider-bottom" class="settings-tile-divider-bottom" />
+            <rect id="touch-me" pointer-events="all" x="0" y="0" width="100%" height="100%-2" opacity="0" />
+        </symbol>
+    </defs>
+
+    <use id="settings-sampling-list" href="#tile-list">
+        <var id="virtual" value="1" />
+        <var id="separator-height-bottom" value="2" />
+
+        <use id="my-pool3" href="#tile-list-pool">
+            <use id="my-pool3[0]" href="#my-tile-item" class="settings-tile-list-item" />
+            <use id="my-pool3[1]" href="#my-tile-item" class="settings-tile-list-item" />
+            <use id="my-pool3[2]" href="#my-tile-item" class="settings-tile-list-item" />
+            <use id="my-pool3[3]" href="#my-tile-item" class="settings-tile-list-item" />
+            <use id="my-pool3[4]" href="#my-tile-item" class="settings-tile-list-item" />
+            <use id="my-pool3[5]" href="#my-tile-item" class="settings-tile-list-item" />
+            <use id="my-pool3[6]" href="#my-tile-item" class="settings-tile-list-item" />
+            <use id="my-pool3[7]" href="#my-tile-item" class="settings-tile-list-item" />
+            <use id="my-pool3[8]" href="#my-tile-item" class="settings-tile-list-item" />
+            <use id="my-pool3[9]" href="#my-tile-item" class="settings-tile-list-item" />
+        </use>
+    </use>
+</svg>

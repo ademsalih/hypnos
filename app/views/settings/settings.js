@@ -23,11 +23,11 @@ function initSettings() {
         touch.onclick = (evt) => {
             console.log(`touched: ${index}`);
             if (index == 0) {
-                views.navigate("settings/settings_sensor");
+                views.navigate("settings/toggleSensor");
             } else if (index == 1) {
-                views.navigate("settings/settings_sampling");
+                views.navigate("settings/sensorSampling");
             } else if (index == 2) {
-                views.navigate("settings/settings_about");
+                views.navigate("settings/about");
             }
         }
     });
