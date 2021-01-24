@@ -9,11 +9,6 @@ export function init(_views) {
     views = _views;
     console.log("main init()");
     onMount();
-    initSensors();
-}
-
-function initSensors() {
-
 }
 
 function onMount() {
