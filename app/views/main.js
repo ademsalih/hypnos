@@ -1,7 +1,5 @@
 import document from "document";
 import { Accelerometer } from "accelerometer";
-import { HeartRateSensor } from "heart-rate";
-import { Gyroscope } from "gyroscope";
 
 let views;
 
