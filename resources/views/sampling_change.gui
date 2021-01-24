@@ -1,0 +1,46 @@
+<svg viewport-fill="fb-black">
+    <use id="tumbler" href="#tumblerview">
+
+        <use id="item0" href="#tumbler-item" class="item">
+            <text id="content">1</text>
+        </use>
+
+        <use id="item1" href="#tumbler-item" class="item">
+            <text id="content">2</text>
+        </use>
+
+        <use id="item2" href="#tumbler-item" class="item">
+            <text id="content">5</text>
+        </use>
+
+        <use id="item3" href="#tumbler-item" class="item">
+            <text id="content">10</text>
+        </use>
+
+        <use id="item4" href="#tumbler-item" class="item">
+            <text id="content">15</text>
+        </use>
+
+        <use id="item5" href="#tumbler-item" class="item">
+            <text id="content">20</text>
+        </use>
+
+        <use id="item6" href="#tumbler-item" class="item">
+            <text id="content">30</text>
+        </use>
+
+        <use id="item7" href="#tumbler-item" class="item">
+            <text id="content">40</text>
+        </use>
+
+        <use id="item8" href="#tumbler-item" class="item">
+            <text id="content">50</text>
+        </use>
+
+        <use id="item9" href="#tumbler-item" class="item">
+            <text id="content">100</text>
+        </use>
+    </use>
+
+    <text fill="white" x="60%" y="60%" font-size="35">Hz</text>
+</svg>
