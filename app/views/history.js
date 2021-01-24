@@ -28,14 +28,15 @@ function onMount() {
             };
         },
         configureTile: function (tile, info) {
+            console.log(info.index)
             if (info.type == "my-pool") {
                 if (info.index == 0) {
-                    tile.getElementById("text").text = "Delete All Files";
+                    tile.getElementById("history-text").text = "Delete All Files";
                 } else {
                     let i = info.index - 1;
                     let file = files[i];
                     let size = fileHandler.fileSize(file);
-                    tile.getElementById("text").text = `${file} (${shortFileSize(size)})`;
+                    tile.getElementById("history-text").text = `${file} (${shortFileSize(size)})`;
                 }
 
                 let touch = tile.getElementById("touch-me");

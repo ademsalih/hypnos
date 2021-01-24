@@ -1,5 +1,7 @@
 import document from "document";
 import { Accelerometer } from "accelerometer";
+import { HeartRateSensor } from "heart-rate";
+import { Gyroscope } from "gyroscope";
 
 let views;
 
@@ -7,6 +9,11 @@ export function init(_views) {
     views = _views;
     console.log("main init()");
     onMount();
+    initSensors();
+}
+
+function initSensors() {
+
 }
 
 function onMount() {
@@ -19,6 +26,9 @@ function onMount() {
 
     let viewHistoryButton = document.getElementById("viewHistoryButton");
     viewHistoryButton.addEventListener("click", viewHistoryButtonClickHandler);
+
+    let settingsButton = document.getElementById("settingsButton");
+    settingsButton.addEventListener("click", settingsButtonClickHandler);
 }
 
 function newSessionButtonClickHandler(_evt) {
@@ -27,6 +37,10 @@ function newSessionButtonClickHandler(_evt) {
 
 function viewHistoryButtonClickHandler(_evt) {
     views.navigate("history");
+}
+
+function settingsButtonClickHandler(_evt) {
+    views.navigate("settings/settings");
 }
 
 

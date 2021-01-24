@@ -14,7 +14,7 @@ export function init(_views) {
 }
 
 function onMount() {
-    document.addEventListener("keypress", keyHandler); // Back button
+    document.addEventListener("keypress", keyHandler);
 
     let sessionControlButton = document.getElementById("sessionControlButton");
     sessionControlButton.addEventListener("click", sessionControlButtonClickHandler);

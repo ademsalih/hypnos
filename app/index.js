@@ -10,6 +10,12 @@ const views = init(
         ["record", () => import("./views/record")],
         ["history", () => import("./views/history")],
         ["detail", () => import("./views/detail")],
+
+        ["settings/settings", () => import("./views/settings/settings")],
+        ["settings/toggleSensor", () => import("./views/settings/toggleSensor")],
+        ["settings/sensorSampling", () => import("./views/settings/sensorSampling")],
+        ["settings/about", () => import("./views/settings/about")],
+        ["settings/samplingTumbler", () => import("./views/settings/samplingTumbler")]
     ],
     "./resources/views/"
 );

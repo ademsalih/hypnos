@@ -26,12 +26,7 @@ export function init(_views) {
         },
         configureTile: function (tile, info) {
             if (info.type == "my-pool2") {
-                tile.getElementById("text2").text = `${bytes[info.index]}`;
-
-                let text = tile.getElementById("text2");
-                text.style.fontSize = 28;
-                text.style.margin = 0;
-                text.style.padding = 0;
+                tile.getElementById("detail-text").text = `${bytes[info.index]}`;
             }
         }
     };

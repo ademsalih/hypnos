@@ -1,15 +1,80 @@
-.tile-list-item {
+/* Settings View */
+.settings-tile-list-item {
+    height: 128;
+}
+
+text#settings-text-main {
+    font-family: System-Regular;
+    fill: "white";
+    font-size: 38;
+    y: 36;
+    x: 6;
+}
+
+text#settings-text-secondary {
+    font-family: System-Regular;
+    fill: #63c2f7;
+    font-size: 29;
+    y: 100%-20;
+    x: 100%-8;
+    text-anchor: end;
+}
+
+.settings-tile-divider-bottom {
+    x: 0;
+    y: 100%-2;
+    width: 100%;
+    height: 2;
+    fill: fb-extra-dark-gray;
+}
+
+text#sampling-text-main {
+    text-length: 32;
+    font-family: System-Regular;
+    fill: "white";
+    font-size: 38;
+    y: 36;
+    x: 6;
+}
+
+text#sampling-text-secondary {
+    font-family: System-Regular;
+    fill: #63c2f7;
+    font-size: 29;
+    y: 100%-20;
+    x: 100%-8;
+    text-anchor: end;
+    text-length: 32;
+}
+
+#tumbler {
+    y: 50%-55;
+}
+
+.item {
+    height: 90;
+}
+
+.item text {
+    font-size: 80;
+    fill: white;
+    x: 55%;
+    text-anchor: end;
+}
+
+/* History View */
+.history-tile-list-item {
     height: 83;
 }
 
-.tile-list-item text {
+text#history-text {
     font-family: System-Regular;
     font-size: 26;
     fill: "white";
     text-length: 32;
 }
 
-.tile-divider-bottom {
+.history-tile-divider-bottom {
     x: 0;
     y: 100%-2;
     width: 100%;
@@ -17,8 +82,14 @@
     fill: "white";
 }
 
-.tile-list-item2 {
+/* Detail View */
+.detail-tile-list-item {
     height: 30;
-    margin: 0;
-    padding: 0;
 }
+
+text#detail-text {
+    font-size: 20;
+    text-length: 32;
+}
+
+
