@@ -53,7 +53,6 @@ function initSettings() {
         }
     };
 
-    // VTList.length must be set AFTER VTList.delegate
     virtualList.length = elementCount;
 }
 
