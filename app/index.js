@@ -1,4 +1,3 @@
-import document from "document";
 import { Application } from './lib/view';
 
 import { Main } from './views/main';
@@ -10,7 +9,9 @@ import { SamplingTumbler } from './views/settings/sampling/samplingTumbler';
 import { About } from './views/settings/about/about';
 
 class MultiScreenApp extends Application {
-    // List all screens
+    /**
+     * All screens of the application should be listed here.
+     */
     screens = {
         Main,
         Session,
@@ -22,5 +23,5 @@ class MultiScreenApp extends Application {
     }
 }
 
-// Start the application with Screen1.
+// Start the application with Main-screen.
 MultiScreenApp.start('Main');
