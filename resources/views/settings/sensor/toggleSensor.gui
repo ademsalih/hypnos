@@ -1,0 +1,28 @@
+<svg id="toggleSensor" display="none" viewport-fill="#000000">
+    <defs>
+        <symbol id="my-tile-item" href="#tile-list-item" focusable="false" pointer-events="none" system-events="all" display="none">
+            <use id="item0" href="#checkbox-tile" value="0">
+                <set href="header/text" attributeName="text-buffer" to="Accelerometer" />
+            </use>
+            <rect id="tile-divider-bottom" class="settings-tile-divider-bottom" />
+        </symbol>
+    </defs>
+
+    <use id="my-list2" href="#tile-list">
+        <var id="virtual" value="1" />
+
+        <use id="my-pool2" href="#tile-list-pool">
+            <use id="my-pool2[0]" href="#my-tile-item" class="detail-tile-list-item" />
+            <use id="my-pool2[1]" href="#my-tile-item" class="detail-tile-list-item" />
+            <use id="my-pool2[2]" href="#my-tile-item" class="detail-tile-list-item" />
+            <use id="my-pool2[3]" href="#my-tile-item" class="detail-tile-list-item" />
+            <use id="my-pool2[4]" href="#my-tile-item" class="detail-tile-list-item" />
+            <use id="my-pool2[5]" href="#my-tile-item" class="detail-tile-list-item" />
+            <use id="my-pool2[6]" href="#my-tile-item" class="detail-tile-list-item" />
+            <use id="my-pool2[7]" href="#my-tile-item" class="detail-tile-list-item" />
+            <use id="my-pool2[8]" href="#my-tile-item" class="detail-tile-list-item" />
+            <use id="my-pool2[9]" href="#my-tile-item" class="detail-tile-list-item" />
+        </use>
+    </use>
+
+</svg>

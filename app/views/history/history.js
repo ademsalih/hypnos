@@ -1,5 +1,5 @@
 import document from "document";
-import FileHandler from "../FileHandler";
+import FileHandler from "../../FileHandler";
 
 let views;
 

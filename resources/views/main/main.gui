@@ -1,0 +1,27 @@
+<link rel="stylesheet" href="styles.css" />
+<svg id="main" display="none" viewport-fill="#000000">
+    <use href="#scrollview">
+
+        <use href="#scrollview-item" height="33%">
+            <!-- Start Session Button -->
+            <use id="newSessionButton" href="#square-button" fill="fb-blue">
+                <set href="#text" attributeName="text-buffer" to="New Session" />
+            </use>
+        </use>
+
+        <use href="#scrollview-item" height="33%">
+            <!-- Start Session Button -->
+            <use id="viewHistoryButton" href="#square-button" fill="fb-blue">
+                <set href="#text" attributeName="text-buffer" to="View History" />
+            </use>
+        </use>
+
+        <use href="#scrollview-item" height="33%">
+            <!-- Start Session Button -->
+            <use id="settingsButton" href="#square-button" fill="fb-blue">
+                <set href="#text" attributeName="text-buffer" to="Settings" />
+            </use>
+        </use>
+
+    </use>
+</svg>

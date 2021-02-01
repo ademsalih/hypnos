@@ -1,26 +1,26 @@
-import { init } from "./views"
+import document from "document";
+import { Application } from './lib/view';
 
-/**
- * Definition for each view in the resources/views folder, and the associated
- * JavaScript module is lazily loaded alongside its view.
- */
-const views = init(
-    [
-        ["main", () => import("./views/main")],
-        ["record", () => import("./views/record")],
-        ["history", () => import("./views/history")],
-        ["detail", () => import("./views/detail")],
+import { Main } from './views/main';
+import { Session } from './views/session';
+import { Settings } from './views/settings/settings';
+import { ToggleSensor } from './views/settings/sensor/toggleSensor';
+import { SensorSampling } from './views/settings/sampling/sensorSampling';
+import { SamplingTumbler } from './views/settings/sampling/samplingTumbler';
+import { About } from './views/settings/about/about';
 
-        ["settings/settings", () => import("./views/settings/settings")],
-        ["settings/toggleSensor", () => import("./views/settings/toggleSensor")],
-        ["settings/sensorSampling", () => import("./views/settings/sensorSampling")],
-        ["settings/about", () => import("./views/settings/about")],
-        ["settings/samplingTumbler", () => import("./views/settings/samplingTumbler")]
-    ],
-    "./resources/views/"
-);
+class MultiScreenApp extends Application {
+    // List all screens
+    screens = {
+        Main,
+        Session,
+        Settings,
+        ToggleSensor,
+        SensorSampling,
+        SamplingTumbler,
+        About
+    }
+}
 
-// Select the first view (view-1) after 1 second
-setTimeout(() => {
-    views.navigate("main");
-}, 0);
+// Start the application with Screen1.
+MultiScreenApp.start('Main');

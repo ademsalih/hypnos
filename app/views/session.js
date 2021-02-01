@@ -1,4 +1,39 @@
-import document from "document";
+import { Application } from '../lib/view';
+import { View, $at } from '../lib/view'
+
+const $ = $at( '#session' );
+
+export class Session extends View {
+    // Root view element used to show/hide the view.
+    el = $(); // Extract #screen-1 element.
+
+    onMount(){
+
+    }
+
+    onRender(){
+
+    }
+
+    onUnmount(){
+
+    }
+
+    // Screens may have they own key handlers.
+    onKeyUp(){
+        console.log('Key Up!');
+    }
+
+    onKeyBack(e) {
+        e.preventDefault();
+        Application.switchTo('Main');
+    }
+
+}
+
+//####################################################################################
+
+/* import document from "document";
 import { Accelerometer } from "accelerometer";
 import FileHandler from "../FileHandler"
 
@@ -69,4 +104,5 @@ function keyHandler(evt) {
         evt.preventDefault();
         views.navigate("main");
     }
-}
+} */
+

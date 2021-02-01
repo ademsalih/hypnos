@@ -1,4 +1,43 @@
-import document from "document";
+import { Application } from '../lib/view';
+import { View, $at } from '../lib/view'
+
+const $ = $at( '#main' );
+
+export class Main extends View {
+    // Root view element used to show/hide the view.
+    el = $(); // Extract #screen-1 element.
+
+    onMount(){
+        const newSessionButton = $( '#newSessionButton' );
+        newSessionButton.addEventListener("click", this.sessionButtonClickHandler);
+
+        const settingsButton = $( '#settingsButton' );
+        settingsButton.addEventListener("click", this.settingsButtonClickHandler);
+    }
+
+    onRender(){
+    }
+
+    onUnmount(){
+    }
+
+    // Screens may have they own key handlers.
+    onKeyUp(){
+    }
+
+    sessionButtonClickHandler() {
+        Application.switchTo('Session');
+    }
+
+    settingsButtonClickHandler() {
+        Application.switchTo('Settings');
+    }
+
+}
+
+//########################################################################################
+
+/* import document from "document";
 import { Accelerometer } from "accelerometer";
 
 let views;
@@ -35,8 +74,7 @@ function viewHistoryButtonClickHandler(_evt) {
 function settingsButtonClickHandler(_evt) {
     views.navigate("settings/settings");
 }
-
-
+ */
 
 
 
