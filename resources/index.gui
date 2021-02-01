@@ -1,6 +1,9 @@
-<svg viewport-fill="yellow">
-  <text x="50%" y="50%+15"
-        font-family="System-Regular" fill="black"
-        font-size="30" font-weight="bold"
-        text-anchor="middle">Loading</text>
+<svg>
+    <link rel="import" href="views/main/main.gui" />
+    <link rel="import" href="views/session/session.gui" />
+    <link rel="import" href="views/settings/settings.gui" />
+    <link rel="import" href="views/settings/sensor/toggleSensor.gui" />
+    <link rel="import" href="views/settings/sampling/sensorSampling.gui" />
+    <link rel="import" href="views/settings/sampling/samplingTumbler.gui" />
+    <link rel="import" href="views/settings/about/about.gui" />
 </svg>

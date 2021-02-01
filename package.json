@@ -26,5 +26,8 @@
   "scripts": {
     "build": "fitbit-build",
     "debug": "fitbit"
+  },
+  "dependencies": {
+    "io-ts": "^2.2.10"
   }
 }
