@@ -1,5 +1,5 @@
-<link rel="stylesheet" href="styles.css" />
-<svg id="sensorSampling" display="none" viewport-fill="#000000">
+<svg id="sensorSampling" display="none">
+    <link rel="stylesheet" href="styles.css" />
     <defs>
         <symbol id="my-tile-item" href="#tile-list-item" focusable="false" pointer-events="none" system-events="all" display="none">
             <text id="sampling-text-main" />

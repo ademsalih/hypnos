@@ -1,0 +1,23 @@
+<svg id="summary" display="none">
+    <link rel="stylesheet" href="styles.css" />
+
+    <use href="#scrollview">
+
+        <use href="#scrollview-item" height="70%">
+            <!-- Welcome Header and Description -->
+            <use id="sessionMixedText" href="#mixed-text-left-top" height="100%">
+                <set href="#header/text" attributeName="text-length" to="32"/>
+                <set href="#header/text" attributeName="text-buffer" to="Session Done"/>
+                <set href="#copy/text" attributeName="text-buffer" to="..."/>
+            </use>
+        </use>
+
+        <use href="#scrollview-item" height="30%">
+            <!-- Session Control Button -->
+            <use id="summaryOKButton" href="#square-button">
+                <set href="#text" attributeName="text-buffer" to="OK" />
+            </use>
+        </use>
+
+    </use>
+</svg>

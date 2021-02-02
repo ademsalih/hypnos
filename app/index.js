@@ -1,7 +1,8 @@
 import { Application } from './lib/view';
 
 import { Main } from './views/main';
-import { Session } from './views/session';
+import { Session } from './views/session/session';
+import { Summary } from './views/session/summary';
 import { Settings } from './views/settings/settings';
 import { ToggleSensor } from './views/settings/sensor/toggleSensor';
 import { SensorSampling } from './views/settings/sampling/sensorSampling';
@@ -15,6 +16,7 @@ class MultiScreenApp extends Application {
     screens = {
         Main,
         Session,
+        Summary,
         Settings,
         ToggleSensor,
         SensorSampling,

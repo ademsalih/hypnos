@@ -1,5 +1,5 @@
-<link rel="stylesheet" href="styles.css" />
-<svg id="samplingTumbler" display="none" viewport-fill="#000000">
+<svg id="samplingTumbler" display="none">
+    <link rel="stylesheet" href="styles.css" />
     <use id="tumbler" href="#tumblerview">
 
         <use id="item0" href="#tumbler-item" class="item">

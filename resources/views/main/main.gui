@@ -1,5 +1,5 @@
-<link rel="stylesheet" href="styles.css" />
-<svg id="main" display="none" viewport-fill="#000000">
+<svg id="main" display="none">
+    <link rel="stylesheet" href="styles.css" />
     <use href="#scrollview">
 
         <use href="#scrollview-item" height="33%">

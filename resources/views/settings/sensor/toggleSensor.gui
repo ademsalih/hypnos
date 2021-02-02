@@ -1,4 +1,4 @@
-<svg id="toggleSensor" display="none" viewport-fill="#000000">
+<svg id="toggleSensor" display="none">
     <defs>
         <symbol id="my-tile-item" href="#tile-list-item" focusable="false" pointer-events="none" system-events="all" display="none">
             <use id="item0" href="#checkbox-tile" value="0">
