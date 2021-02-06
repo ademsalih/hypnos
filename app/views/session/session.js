@@ -1,8 +1,11 @@
 import { Application } from '../../lib/view';
 import { View, $at } from '../../lib/view'
 import { AccelerometerReading } from '../../reading/AccelerometerReading';
+import { Accelerometer } from "accelerometer";
+import * as messaging from "messaging";
 
 const $ = $at( '#session' );
+const accelerometer = new Accelerometer({ frequency: 10 });
 
 export class Session extends View {
     // Root view element used to show/hide the view.
@@ -11,11 +14,25 @@ export class Session extends View {
     running = false;
 
     onMount(){
-        var reading = new AccelerometerReading("A12345", 1, 1, 1).get();
-        console.log(JSON.stringify(reading));
-
         let sessionControlButton = $('#sessionControlButton');
         sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
+
+        messaging.peerSocket.addEventListener("open", (evt) => {
+            console.log("Ready to send or receive messages");
+        });
+
+        if (Accelerometer) {
+            accelerometer.addEventListener("reading", () => {
+                var reading = new AccelerometerReading("A12345", accelerometer.x, accelerometer.y, accelerometer.z).get();
+
+                if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+                    messaging.peerSocket.send(reading);
+                }
+            });
+         } else {
+            console.log("This device does NOT have an Accelerometer!");
+         }
+        
     }
 
     onRender(){
@@ -33,9 +50,11 @@ export class Session extends View {
 
     startSessionButtonHandler() {
         if (this.running) {
+            accelerometer.stop();
             console.log("[Session] Ending session...");
             Application.switchTo('Summary');
         } else {
+            accelerometer.start();
             this.running = !this.running;
             console.log("[Session] Starting session...");
             updateView();

@@ -1,5 +1,6 @@
 import { Application } from '../lib/view';
 import { View, $at } from '../lib/view'
+import { me } from "appbit";
 
 const $ = $at( '#main' );
 
@@ -8,6 +9,7 @@ export class Main extends View {
     el = $(); // Extract #screen-1 element.
 
     onMount(){
+        me.appTimeoutEnabled = false;
         const newSessionButton = $( '#newSessionButton' );
         newSessionButton.addEventListener("click", this.sessionButtonClickHandler);
 
