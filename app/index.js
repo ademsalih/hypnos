@@ -1,6 +1,7 @@
 import { Application } from './lib/view';
 
 import { Main } from './views/main';
+import { Search } from './views/session/search';
 import { Session } from './views/session/session';
 import { Summary } from './views/session/summary';
 import { Settings } from './views/settings/settings';
@@ -15,6 +16,7 @@ class MultiScreenApp extends Application {
      */
     screens = {
         Main,
+        Search,
         Session,
         Summary,
         Settings,

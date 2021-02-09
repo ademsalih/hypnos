@@ -1,3 +1,7 @@
-#sessionControlButton {
+#sessionMixedText {
     fill: "fb-blue";
+}
+
+#sessionControlButton {
+    fill: "fb-mint";
 }

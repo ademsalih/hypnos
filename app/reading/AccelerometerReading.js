@@ -8,7 +8,7 @@ export class AccelerometerReading extends Reading {
     }
 
     get() {
-       return super.get();
+        return super.get();
     }
 
 }

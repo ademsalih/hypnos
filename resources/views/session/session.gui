@@ -5,9 +5,9 @@
 
         <use href="#scrollview-item" height="70%">
             <!-- Welcome Header and Description -->
-            <use id="sessionMixedText" href="#mixed-text-left-top" height="100%" fill="fb-blue">
+            <use id="sessionMixedText" href="#mixed-text-left-top" height="100%">
                 <set href="#header/text" attributeName="text-length" to="32"/>
-                <set href="#header/text" attributeName="text-buffer" to="New Session"/>
+                <set href="#header/text" attributeName="text-buffer" to="Connected to Nyx"/>
                 <set href="#copy/text" attributeName="text-buffer" to="Press the button below to start a new session."/>
             </use>
         </use>

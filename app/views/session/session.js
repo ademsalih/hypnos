@@ -2,10 +2,13 @@ import { Application } from '../../lib/view';
 import { View, $at } from '../../lib/view'
 import { AccelerometerReading } from '../../reading/AccelerometerReading';
 import { Accelerometer } from "accelerometer";
+import { HeartRateSensor } from "heart-rate";
+import { HeartRateReading } from '../../reading/HeartRateReading';
 import * as messaging from "messaging";
 
 const $ = $at( '#session' );
 const accelerometer = new Accelerometer({ frequency: 10 });
+const hrm = new HeartRateSensor({ frequency: 1});
 
 export class Session extends View {
     // Root view element used to show/hide the view.
@@ -16,10 +19,6 @@ export class Session extends View {
     onMount(){
         let sessionControlButton = $('#sessionControlButton');
         sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
-
-        messaging.peerSocket.addEventListener("open", (evt) => {
-            console.log("Ready to send or receive messages");
-        });
 
         if (Accelerometer) {
             accelerometer.addEventListener("reading", () => {
@@ -32,15 +31,24 @@ export class Session extends View {
          } else {
             console.log("This device does NOT have an Accelerometer!");
          }
-        
+
+         if (HeartRateSensor) {
+             hrm.addEventListener("reading", () => {
+                var reading = new HeartRateReading("A12345", hrm.heartRate);
+
+                if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+                    messaging.peerSocket.send(reading);
+                }
+             });
+         } else {
+            console.log("This device does NOT have a heart rate sensor!");
+         }
     }
 
     onRender(){
-
     }
 
     onUnmount(){
-
     }
 
     onKeyBack(e) {
@@ -55,6 +63,7 @@ export class Session extends View {
             Application.switchTo('Summary');
         } else {
             accelerometer.start();
+            hrm.start();
             this.running = !this.running;
             console.log("[Session] Starting session...");
             updateView();
@@ -78,33 +87,3 @@ function updateView() {
     let sessionControlButtonText = sessionControlButton.getElementById("text");
     sessionControlButtonText.text = "End Session"
 }
-
-//####################################################################################
-
-/*
-
-function onMount() {
-    document.addEventListener("keypress", keyHandler);
-
-    let sessionControlButton = document.getElementById("sessionControlButton");
-    sessionControlButton.addEventListener("click", sessionControlButtonClickHandler);
-
-    var now = new Date();
-    let fileName = `${now.getFullYear()}-${("0"+(now.getMonth()+1)).slice(-2)}-${now.getDate()}T${now.getHours()}-${now.getMinutes()}`
-
-    if (Accelerometer) {
-        acc = new Accelerometer({ frequency: 10 });
-        acc.addEventListener("reading", () => {
-            console.log(`X=${acc.x}  Y=${acc.y}  Z=${acc.z}`)
-            let buffer = new ArrayBuffer(32);
-            let bytes = new Float64Array(buffer);
-            bytes[0] = Date.now();
-            bytes[1] = acc.x;
-            bytes[2] = acc.y;
-            bytes[3] = acc.z;
-        
-            fileHandler.appendToFile(fileName, buffer);
-        });
-    }
-}*/
-

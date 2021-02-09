@@ -10,7 +10,7 @@
   "fitbit": {
     "appUUID": "ba78a973-59d4-4751-a052-b78c24fcb305",
     "appType": "app",
-    "appDisplayName": "Sleepy",
+    "appDisplayName": "Hypnos",
     "iconFile": "resources/icon.png",
     "wipeColor": "#ffffff",
     "requestedPermissions": [

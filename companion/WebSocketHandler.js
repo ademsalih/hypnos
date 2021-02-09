@@ -11,20 +11,24 @@ export class WebSocketHandler {
      */
     _reConnectDelay = 1000;
     _onMessageHandler;
+    _onOpenHandler;
     _instance;
+    _timeOut;
+    _reconenct = true;
 
     constructor(host, port) {
         this._host = host;
         this._port = port;
     }
 
-    start() {
+    start(inside) {
         const uri = `ws://${this._host}:${this._port}/`
         const websocket = new WebSocket(uri);
         
         websocket.addEventListener("open", () => {
-            console.log("CONNECTED");
             this._instance = websocket;
+            this._onOpenHandler();
+            console.log("CONNECTED");
         });
 
         websocket.addEventListener("close", (e) => {
@@ -34,12 +38,20 @@ export class WebSocketHandler {
 			        console.log("WebSocket: closed");
 			        break;
 		        default:
-                    this.reConnect();
+                    if (inside) {
+                        if (this._reconenct) {
+                            this.reConnect();
+                        }
+                    } else {
+                        this._reconenct = true;
+                        this.reConnect();
+                    }
 			        break;
 		    }
         });
 
         websocket.addEventListener("error", (e) => {
+            console.log("ERROR");
             console.log(e);
         });
 
@@ -49,9 +61,12 @@ export class WebSocketHandler {
     }
 
     reConnect() {
-        setTimeout(() => {
+        console.log("A")
+        this._timeOut = setTimeout(() => {
+            console.log("B")
+
             console.log(`Reconnecting in ${this._reConnectDelay} ms...`)
-            this.start();
+            this.start(true);
         }, this._reConnectDelay);
     }
 
@@ -59,7 +74,7 @@ export class WebSocketHandler {
         if (this._onMessageHandler) {
             this._onMessageHandler(message);
         } else {
-            console.warn("No onMessage handler set");
+            console.warn("[WebSocketHandler] No onMessage handler set");
         }
     }
 
@@ -67,8 +82,25 @@ export class WebSocketHandler {
         this._onMessageHandler = f;
     }
 
+    onOpen() {
+        if (this._onOpenHandler) {
+            this._onOpenHandler();
+        } else {
+            console.warn("[WebSocketHandler] No onOpen handler set");
+        }
+    }
+
+    setOnOpen(f) {
+        this._onOpenHandler = f;
+    }
+
     send(message) {
         this._instance.send(message);
+    }
+
+    stop() {
+        clearTimeout(this._timeOut);
+        this._reconenct = false;
     }
     
 }

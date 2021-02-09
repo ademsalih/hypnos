@@ -1,6 +1,6 @@
-import Reading from "./Reading"
+import { Reading } from "./Reading"
 
-export default class HeartRateReading extends Reading {
+export class HeartRateReading extends Reading {
 
     constructor(session, bpmReading) {
         let data = {bpm: bpmReading}
@@ -10,4 +10,5 @@ export default class HeartRateReading extends Reading {
     get() {
         return super.get();
     }
+
 }

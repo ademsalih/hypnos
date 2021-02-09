@@ -25,6 +25,9 @@
     <!-- Tumbler View -->
     <link rel="import" href="/mnt/sysassets/widgets/baseview_widget.gui" />
     <link rel="import" href="/mnt/sysassets/widgets/tumblerview_widget.gui" />
+
+    <!-- Spinner -->
+    <link rel="import" href="/mnt/sysassets/widgets/spinner_widget.gui" />
     
   </defs>
 </svg>

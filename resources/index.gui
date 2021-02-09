@@ -1,5 +1,6 @@
 <svg>
     <link rel="import" href="views/main/main.gui" />
+    <link rel="import" href="views/session/search/search.gui" />
     <link rel="import" href="views/session/session.gui" />
     <link rel="import" href="views/session/summary/summary.gui" />
     <link rel="import" href="views/settings/settings.gui" />
