@@ -10,14 +10,34 @@ const $ = $at( '#session' );
 const accelerometer = new Accelerometer({ frequency: 10 });
 const hrm = new HeartRateSensor({ frequency: 1});
 
+
 export class Session extends View {
     // Root view element used to show/hide the view.
     el = $(); // Extract #screen-1 element.
 
     running = false;
 
+    onMessageHandler = (evt) => {
+        console.log(`[Session] Message from Companion: ${evt.data}`)
+        switch (evt.data) {
+            case "DISCONNECT":
+                console.log("Lost connection, switing to Search...");
+                Application.switchTo('Search');
+                break;
+            default:
+                break;
+        }
+    }
+
     onMount(){
+        console.log("[Session] onMount()")
+        console.log(`[Session] onMessageHandler: ${messaging.peerSocket.message}`)
+
+        messaging.peerSocket.addEventListener("message", this.onMessageHandler);
+        console.log(`[Session] onMessageHandler: ${messaging.peerSocket.eventListener}`)
+
         let sessionControlButton = $('#sessionControlButton');
+
         sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
 
         if (Accelerometer) {
@@ -49,11 +69,17 @@ export class Session extends View {
     }
 
     onUnmount(){
+        messaging.peerSocket.removeEventListener("message", this.onMessageHandler);
     }
 
     onKeyBack(e) {
         e.preventDefault();
-        Application.switchTo('Main');
+        if (!this.running) {
+            Application.switchTo('Main');
+        } else {
+            // Change text to "End session before exit""
+        }
+        
     }
 
     startSessionButtonHandler() {

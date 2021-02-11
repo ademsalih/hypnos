@@ -12,6 +12,7 @@ export class WebSocketHandler {
     _reConnectDelay = 1000;
     _onMessageHandler;
     _onOpenHandler;
+    _onCloseHandler;
     _instance;
     _timeOut;
     _reconenct = true;
@@ -32,17 +33,23 @@ export class WebSocketHandler {
         });
 
         websocket.addEventListener("close", (e) => {
-            console.log("DISCONNECTED");
+            console.log("[WebSocketHandler] Close");
             switch(e.code) {
                 case 1000:
 			        console.log("WebSocket: closed");
 			        break;
 		        default:
+                    console.log("default")
+                    this._onCloseHandler();
+
                     if (inside) {
+                        console.log("inside")
                         if (this._reconenct) {
+                            console.log("reconnect")
                             this.reConnect();
                         }
                     } else {
+                        console.log("outside")
                         this._reconenct = true;
                         this.reConnect();
                     }
@@ -51,8 +58,7 @@ export class WebSocketHandler {
         });
 
         websocket.addEventListener("error", (e) => {
-            console.log("ERROR");
-            console.log(e);
+            console.log("[WebSocketHandler] Error");
         });
 
         websocket.addEventListener("message", (e) => {
@@ -61,10 +67,7 @@ export class WebSocketHandler {
     }
 
     reConnect() {
-        console.log("A")
         this._timeOut = setTimeout(() => {
-            console.log("B")
-
             console.log(`Reconnecting in ${this._reConnectDelay} ms...`)
             this.start(true);
         }, this._reConnectDelay);
@@ -94,6 +97,18 @@ export class WebSocketHandler {
         this._onOpenHandler = f;
     }
 
+    onClose() {
+        if (this._onCloseHandler) {
+            this._onCloseHandler();
+        } else {
+            console.warn("[WebSocketHandler] No onClose handler set");
+        }
+    }
+
+    setOnClose(f) {
+        this._onCloseHandler = f;
+    }
+
     send(message) {
         this._instance.send(message);
     }
@@ -101,6 +116,7 @@ export class WebSocketHandler {
     stop() {
         clearTimeout(this._timeOut);
         this._reconenct = false;
+        this._instance = null;
     }
     
 }

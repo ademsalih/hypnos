@@ -10,6 +10,10 @@ websocket.setOnMessage((message) => {
     console.log(`Android Server says: ${message}`)
 })
 
+websocket.setOnClose(() => {
+    console.log("[WebSocketHandler] onClose()");
+    messaging.peerSocket.send("DISCONNECT");
+})
 
 messaging.peerSocket.addEventListener("open", (evt) => {
     console.log("Ready to send or receive messages");

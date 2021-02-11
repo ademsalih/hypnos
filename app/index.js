@@ -1,5 +1,4 @@
 import { Application } from './lib/view';
-
 import { Main } from './views/main';
 import { Search } from './views/session/search';
 import { Session } from './views/session/session';

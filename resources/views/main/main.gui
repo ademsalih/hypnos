@@ -2,14 +2,14 @@
     <link rel="stylesheet" href="styles.css" />
     <use href="#scrollview">
 
-        <use href="#scrollview-item" height="50%">
+        <use href="#scrollview-item" height="33%">
             <!-- New Session Button -->
             <use id="newSessionButton" href="#square-button" fill="fb-blue">
                 <set href="#text" attributeName="text-buffer" to="New Session" />
             </use>
         </use>
 
-        <use href="#scrollview-item" height="50%">
+        <use href="#scrollview-item" height="33%">
             <!-- Settings Button -->
             <use id="settingsButton" href="#square-button" fill="fb-blue">
                 <set href="#text" attributeName="text-buffer" to="Settings" />
