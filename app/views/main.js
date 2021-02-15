@@ -48,7 +48,7 @@ export class Main extends View {
     sessionButtonClickHandler() {
         console.log(`[Main] connected=${connected}`)
         if (connected) {
-            Application.switchTo('Session');
+            Application.switchTo('RecordView');
         } else {
             Application.switchTo('Search');
         }

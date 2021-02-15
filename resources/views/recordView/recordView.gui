@@ -1,4 +1,4 @@
-<svg id="session" display="none">
+<svg id="recordView" display="none">
     <link rel="stylesheet" href="styles.css" />
 
     <use href="#scrollview">

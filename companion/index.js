@@ -24,11 +24,19 @@ messaging.peerSocket.addEventListener("message", (evt) => {
     let command = message.command;
 
     switch (command) {
+        case "DATA":
+            let data = message.data;
+            websocket.send(JSON.stringify(data));
+            break;
         case "SEARCH":
             console.log("Received new session request from Ionic...")
             websocket.setOnOpen(() => {
                 messaging.peerSocket.send("CONNECT");
-                websocket.send(message.data);
+
+                console.log(`[Companion] Sent to Nyx: ${message.data}`)
+
+                let data = message.data;
+                websocket.send(JSON.stringify(data));
             })
             websocket.start();
             break;

@@ -5,13 +5,13 @@ import { Accelerometer } from "accelerometer";
 import { HeartRateSensor } from "heart-rate";
 import { HeartRateReading } from '../../reading/HeartRateReading';
 import * as messaging from "messaging";
+import Session from '../../sensor/Session';
 
-const $ = $at( '#session' );
-const accelerometer = new Accelerometer({ frequency: 10 });
+const $ = $at( '#recordView' );
+const accelerometer = new Accelerometer({ frequency: 1 });
 const hrm = new HeartRateSensor({ frequency: 1});
 
-
-export class Session extends View {
+export class RecordView extends View {
     // Root view element used to show/hide the view.
     el = $(); // Extract #screen-1 element.
 
@@ -37,32 +37,49 @@ export class Session extends View {
         console.log(`[Session] onMessageHandler: ${messaging.peerSocket.eventListener}`)
 
         let sessionControlButton = $('#sessionControlButton');
-
         sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
+
+        let session = new Session();
 
         if (Accelerometer) {
             accelerometer.addEventListener("reading", () => {
-                var reading = new AccelerometerReading("A12345", accelerometer.x, accelerometer.y, accelerometer.z).get();
+                var reading = new AccelerometerReading(
+                    session.getIdentifier(),
+                    accelerometer.x,
+                    accelerometer.y,
+                    accelerometer.z
+                ).get();
 
                 if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-                    messaging.peerSocket.send(reading);
+
+                    messaging.peerSocket.send({
+                        command: "DATA",
+                        data: {
+                            reading: reading
+                        }
+                    });
                 }
             });
-         } else {
+        } else {
             console.log("This device does NOT have an Accelerometer!");
-         }
+        }
 
-         if (HeartRateSensor) {
-             hrm.addEventListener("reading", () => {
-                var reading = new HeartRateReading("A12345", hrm.heartRate);
+        if (HeartRateSensor) {
+            hrm.addEventListener("reading", () => {
+                var reading = new HeartRateReading(session.getIdentifier(), hrm.heartRate);
 
                 if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-                    messaging.peerSocket.send(reading);
+                    messaging.peerSocket.send({
+                        command: "DATA",
+                        data: {
+                            reading: reading
+                        }
+                    });
                 }
-             });
-         } else {
+            });
+        } else {
             console.log("This device does NOT have a heart rate sensor!");
-         }
+        }
     }
 
     onRender(){

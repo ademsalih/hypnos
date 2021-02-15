@@ -39,10 +39,6 @@ export class Search extends View {
         console.log("[Search] onMount()")
         messaging.peerSocket.addEventListener("message", this.handler);
 
-        const spinner = $( '#spinner' );
-        const searchText = $( '#searchText' );
-        const connectedIcon = $( '#connectedIcon' );
-
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
             console.log("[Search] Looking for phone");
             messaging.peerSocket.send({
@@ -60,8 +56,6 @@ export class Search extends View {
         const searchText = $( '#searchText' );
         const connectedIcon = $( '#connectedIcon' );
 
-        
-
         if (connected) {
             searchText.text = "Connected"
             searchText.style.fill = "fb-mint";
@@ -70,7 +64,7 @@ export class Search extends View {
             connectedIcon.style.display = "inline";
 
             this.changeScreen = setTimeout(() => {
-                Application.switchTo('Session');
+                Application.switchTo('RecordView');
             }, 3000);
         } else {
             clearTimeout(this.changeScreen);

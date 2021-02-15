@@ -13,7 +13,7 @@ export class WebSocketHandler {
     _onMessageHandler;
     _onOpenHandler;
     _onCloseHandler;
-    _instance;
+    _instance = {};
     _timeOut;
     _reconenct = true;
 
@@ -24,15 +24,16 @@ export class WebSocketHandler {
 
     start(inside) {
         const uri = `ws://${this._host}:${this._port}/`
-        const websocket = new WebSocket(uri);
-        
-        websocket.addEventListener("open", () => {
-            this._instance = websocket;
+        this.websocket = new WebSocket(uri);
+
+
+        this.websocket.addEventListener("open", () => {
+            console.log("[WebSocketHandler] onOpen()")
             this._onOpenHandler();
             console.log("CONNECTED");
         });
 
-        websocket.addEventListener("close", (e) => {
+        this.websocket.addEventListener("close", (e) => {
             console.log("[WebSocketHandler] Close");
             switch(e.code) {
                 case 1000:
@@ -57,11 +58,11 @@ export class WebSocketHandler {
 		    }
         });
 
-        websocket.addEventListener("error", (e) => {
+        this.websocket.addEventListener("error", (e) => {
             console.log("[WebSocketHandler] Error");
         });
 
-        websocket.addEventListener("message", (e) => {
+        this.websocket.addEventListener("message", (e) => {
             this.onMessage(e.data);
         })
     }
@@ -110,7 +111,11 @@ export class WebSocketHandler {
     }
 
     send(message) {
-        this._instance.send(message);
+        if (this.websocket) {
+            this.websocket.send(message);
+        } else {
+            console.log("[WebSocketHandler] websocket instace is null")
+        }
     }
 
     stop() {
