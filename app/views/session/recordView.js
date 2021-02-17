@@ -8,8 +8,6 @@ import * as messaging from "messaging";
 import Session from '../../sensor/Session';
 
 const $ = $at( '#recordView' );
-const accelerometer = new Accelerometer({ frequency: 1 });
-const hrm = new HeartRateSensor({ frequency: 1});
 
 export class RecordView extends View {
     // Root view element used to show/hide the view.
@@ -17,41 +15,35 @@ export class RecordView extends View {
 
     running = false;
 
-    onMessageHandler = (evt) => {
-        console.log(`[Session] Message from Companion: ${evt.data}`)
-        switch (evt.data) {
-            case "DISCONNECT":
-                console.log("Lost connection, switing to Search...");
-                Application.switchTo('Search');
-                break;
-            default:
-                break;
-        }
-    }
+    eventCount;
+
+    sessionControlButton = $('#sessionControlButton');
+
+    hrm = new HeartRateSensor({ frequency: 1});
+
+    session;
 
     onMount(){
-        console.log("[Session] onMount()")
-        console.log(`[Session] onMessageHandler: ${messaging.peerSocket.message}`)
+        console.log("[RecordView] onMount()");
 
+        this.eventCount = 0;
+        
         messaging.peerSocket.addEventListener("message", this.onMessageHandler);
-        console.log(`[Session] onMessageHandler: ${messaging.peerSocket.eventListener}`)
 
-        let sessionControlButton = $('#sessionControlButton');
-        sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
+        this.sessionControlButton.addEventListener("click", this.startSessionButtonHandler.bind(this));
 
-        let session = new Session();
+        this.session = new Session();
 
-        if (Accelerometer) {
-            accelerometer.addEventListener("reading", () => {
-                var reading = new AccelerometerReading(
+/*         if (Accelerometer) {
+            this.accelerometer.addEventListener("reading", () => {
+                const reading = new AccelerometerReading(
                     session.getIdentifier(),
-                    accelerometer.x,
-                    accelerometer.y,
-                    accelerometer.z
+                    this.accelerometer.x,
+                    this.accelerometer.y,
+                    this.accelerometer.z
                 ).get();
 
                 if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-
                     messaging.peerSocket.send({
                         command: "DATA",
                         data: {
@@ -62,71 +54,107 @@ export class RecordView extends View {
             });
         } else {
             console.log("This device does NOT have an Accelerometer!");
-        }
+        } */
 
-        if (HeartRateSensor) {
-            hrm.addEventListener("reading", () => {
-                var reading = new HeartRateReading(session.getIdentifier(), hrm.heartRate);
+        this.hrm.onreading = this.heartRateEventHandler.bind(this);
+    }
 
-                if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-                    messaging.peerSocket.send({
-                        command: "DATA",
-                        data: {
-                            reading: reading
-                        }
-                    });
+    heartRateEventHandler() {
+        const reading = new HeartRateReading(this.session.getIdentifier(), this.hrm.heartRate);
+
+        this.eventCount += 1;
+
+        if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+            messaging.peerSocket.send({
+                command: "DATA",
+                data: {
+                    reading: reading
                 }
             });
-        } else {
-            console.log("This device does NOT have a heart rate sensor!");
         }
     }
 
     onRender(){
+
     }
 
     onUnmount(){
+        this.hrm.onreading = null;
+
         messaging.peerSocket.removeEventListener("message", this.onMessageHandler);
+        let sessionMixedText = $('#sessionMixedText');
+        let sessionMixedTextHeader = sessionMixedText.getElementById("header");
+        let sessionMixedTextCopy = sessionMixedText.getElementById("copy");
+    
+        sessionMixedTextHeader.text = "Connected to Nyx";
+        sessionMixedTextHeader.style.fill = "fb-blue"
+        sessionMixedTextCopy.text = "Press the button below to start a new session.";
+    
+        let sessionControlButton = $('#sessionControlButton');
+        sessionControlButton.style.fill = "fb-mint"
+    
+        let sessionControlButtonText = sessionControlButton.getElementById("text");
+        sessionControlButtonText.text = "Start Session"
+        
+
+        let sessionControlButton = $('#sessionControlButton');
+        sessionControlButton.removeEventListener("click", this.startSessionButtonHandler);
     }
 
     onKeyBack(e) {
         e.preventDefault();
+
         if (!this.running) {
             Application.switchTo('Main');
         } else {
             // Change text to "End session before exit""
         }
-        
     }
-
-    startSessionButtonHandler() {
-        if (this.running) {
-            accelerometer.stop();
-            console.log("[Session] Ending session...");
-            Application.switchTo('Summary');
-        } else {
-            accelerometer.start();
-            hrm.start();
-            this.running = !this.running;
-            console.log("[Session] Starting session...");
-            updateView();
+    
+    onMessageHandler = (evt) => {
+        console.log(`[RecordView] Message from Companion: ${evt.data}`)
+        switch (evt.data) {
+            case "DISCONNECT":
+                console.log("Lost connection, switing to Search...");
+                Application.switchTo('Search');
+                break;
+            default:
+                break;
         }
     }
 
-}
+    /**
+     * This method in invoked when the Start Session button
+     * is pressed and controls the sensors accordingly. 
+     */
+    startSessionButtonHandler() {
+        if (this.running) {
+            this.running = false;
 
-function updateView() {
-    let sessionMixedText = $('#sessionMixedText');
-    let sessionMixedTextHeader = sessionMixedText.getElementById("header");
-    let sessionMixedTextCopy = sessionMixedText.getElementById("copy");
+            this.hrm.stop();
 
-    sessionMixedTextHeader.text = "Recording...";
-    sessionMixedTextHeader.style.fill = "red"
-    sessionMixedTextCopy.text = "Press the button below to stop recording.";
+            Application.switchToWithState('Summary', this.eventCount);
+        } else {
+            this.running = true;
 
-    let sessionControlButton = $('#sessionControlButton');
-    sessionControlButton.style.fill = "red"
+            this.hrm.start();
 
-    let sessionControlButtonText = sessionControlButton.getElementById("text");
-    sessionControlButtonText.text = "End Session"
+            let sessionMixedText = $('#sessionMixedText');
+            let sessionMixedTextHeader = sessionMixedText.getElementById("header");
+            let sessionMixedTextCopy = sessionMixedText.getElementById("copy");
+        
+            sessionMixedTextHeader.text = "Recording...";
+            sessionMixedTextHeader.style.fill = "fb-red"
+            sessionMixedTextCopy.text = "Press the button below to stop recording.";
+        
+            let sessionControlButton = $('#sessionControlButton');
+            sessionControlButton.style.fill = "fb-red"
+        
+            let sessionControlButtonText = sessionControlButton.getElementById("text");
+            sessionControlButtonText.text = "End Session"
+        }
+    }
+
+    
+
 }

@@ -1,10 +1,17 @@
 import Sensor from "./Sensor"
 
-export default class SensorManager {
+import { Accelerometer } from "accelerometer";
+import { HeartRateSensor } from "heart-rate";
+
+export class SensorManager {
     SENSORS = []
 
     constructor() {
+        const accelerometer = new Accelerometer();
+        const hrm = new HeartRateSensor();
 
+        this.SENSORS.push(accelerometer);
+        this.SENSORS.push(hrm);
     }
 
     start(sensor) {

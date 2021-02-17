@@ -10,15 +10,16 @@ export class Main extends View {
     // Root view element used to show/hide the view.
     el = $(); // Extract #screen-1 element.
 
+    newSessionButton = $( '#newSessionButton' );
+    settingsButton = $( '#settingsButton' );
+
     onMount(){
         console.log("[Main] onMount()")
 
         me.appTimeoutEnabled = false;
-        const newSessionButton = $( '#newSessionButton' );
-        newSessionButton.addEventListener("click", this.sessionButtonClickHandler);
-
-        const settingsButton = $( '#settingsButton' );
-        settingsButton.addEventListener("click", this.settingsButtonClickHandler);
+        
+        this.newSessionButton.addEventListener("click", this.sessionButtonClickHandler);
+        this.settingsButton.addEventListener("click", this.settingsButtonClickHandler);
 
         messaging.peerSocket.addEventListener("open", (evt) => {
             console.log("Ready!")
@@ -40,13 +41,20 @@ export class Main extends View {
     }
 
     onRender(){
+
     }
 
     onUnmount(){
+        const newSessionButton = $( '#newSessionButton' );
+        newSessionButton.removeEventListener("click", this.sessionButtonClickHandler);
+        
+        
+        const settingsButton = $( '#settingsButton' );
+        settingsButton.removeEventListener("click", this.settingsButtonClickHandler);
     }
 
     sessionButtonClickHandler() {
-        console.log(`[Main] connected=${connected}`)
+        //console.log(`[Main] connected=${connected}`)
         if (connected) {
             Application.switchTo('RecordView');
         } else {
@@ -59,8 +67,3 @@ export class Main extends View {
     }
 
 }
-
-
-
-
-

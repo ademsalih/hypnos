@@ -7,11 +7,15 @@ export class Summary extends View {
     // Root view element used to show/hide the view.
     el = $(); // Extract #screen-1 element.
 
-    running = false;
+    sessionControlButton = $('#summaryOKButton');
 
-    onMount(){
-        let sessionControlButton = $('#summaryOKButton');
-        sessionControlButton.addEventListener("click", this.summaryOKButtonHandler);
+    onMount(events){
+        this.sessionControlButton.addEventListener("click", this.summaryOKButtonHandler);
+
+        let sessionMixedText = $('#sessionMixedText');
+        let sessionMixedTextCopy = sessionMixedText.getElementById("copy");
+        sessionMixedTextCopy.textLength = 20;
+        sessionMixedTextCopy.text = events + " readings";
     }
 
     onRender(){
@@ -19,7 +23,7 @@ export class Summary extends View {
     }
 
     onUnmount(){
-
+        this.sessionControlButton.removeEventListener("click", this.summaryOKButtonHandler);
     }
 
     onKeyBack(e) {

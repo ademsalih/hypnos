@@ -65,7 +65,7 @@ export class Search extends View {
 
             this.changeScreen = setTimeout(() => {
                 Application.switchTo('RecordView');
-            }, 3000);
+            }, 1500);
         } else {
             clearTimeout(this.changeScreen);
             searchText.text = "Looking for Nyx"
@@ -93,7 +93,7 @@ export class Search extends View {
 
     onKeyBack(e) {
         e.preventDefault();
-        Application.switchToWithState('Main');
+        Application.switchTo('Main');
     }
 
 }
