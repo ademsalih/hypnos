@@ -6,6 +6,7 @@ import { HeartRateSensor } from "heart-rate";
 import { HeartRateReading } from '../../reading/HeartRateReading';
 import * as messaging from "messaging";
 import Session from '../../sensor/Session';
+import { SensorManager } from '../../sensor/SensorManager';
 
 const $ = $at( '#recordView' );
 
@@ -14,49 +15,47 @@ export class RecordView extends View {
     el = $(); // Extract #screen-1 element.
 
     running = false;
-
     eventCount;
-
-    sessionControlButton = $('#sessionControlButton');
-
-    hrm = new HeartRateSensor({ frequency: 1});
-
     session;
+    sessionControlButton = $('#sessionControlButton');
+    hrm = new HeartRateSensor({ frequency: 1});
+    acc = new Accelerometer({ frequency: 1});
 
+    sensorManager;
+    
     onMount(){
         console.log("[RecordView] onMount()");
-
-        this.eventCount = 0;
         
         messaging.peerSocket.addEventListener("message", this.onMessageHandler);
-
         this.sessionControlButton.addEventListener("click", this.startSessionButtonHandler.bind(this));
 
+        this.eventCount = 0;
         this.session = new Session();
 
-/*         if (Accelerometer) {
-            this.accelerometer.addEventListener("reading", () => {
-                const reading = new AccelerometerReading(
-                    session.getIdentifier(),
-                    this.accelerometer.x,
-                    this.accelerometer.y,
-                    this.accelerometer.z
-                ).get();
+        this.hrm.onreading = this.heartRateEventHandler.bind(this);
+        this.acc.onreading = this.acceleroemterEventHandler.bind(this);
 
-                if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-                    messaging.peerSocket.send({
-                        command: "DATA",
-                        data: {
-                            reading: reading
-                        }
-                    });
+        if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+            messaging.peerSocket.send({
+                command: "INIT_SESSION",
+                data: {
+                    sessionIdentifier: this.session.getIdentifier()
                 }
             });
-        } else {
-            console.log("This device does NOT have an Accelerometer!");
-        } */
+        }
+    }
 
-        this.hrm.onreading = this.heartRateEventHandler.bind(this);
+    acceleroemterEventHandler() {
+        const reading = new AccelerometerReading(this.session.getIdentifier(), this.acc.x, this.acc.y, this.acc.z);
+
+        this.eventCount += 1;
+
+        if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+            messaging.peerSocket.send({
+                command: "ADD_READING",
+                data: reading.get()
+            })
+        }
     }
 
     heartRateEventHandler() {
@@ -66,10 +65,8 @@ export class RecordView extends View {
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
             messaging.peerSocket.send({
-                command: "DATA",
-                data: {
-                    reading: reading
-                }
+                command: "ADD_READING",
+                data: reading.get()
             });
         }
     }
@@ -80,6 +77,7 @@ export class RecordView extends View {
 
     onUnmount(){
         this.hrm.onreading = null;
+        this.acc.onreading = null;
 
         messaging.peerSocket.removeEventListener("message", this.onMessageHandler);
         let sessionMixedText = $('#sessionMixedText');
@@ -129,15 +127,36 @@ export class RecordView extends View {
      */
     startSessionButtonHandler() {
         if (this.running) {
+            if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+                messaging.peerSocket.send({
+                    command: "STOP_SESSION",
+                    data: {
+                        sessionIdentifier: this.session.getIdentifier(),
+                        endTime: Date.now()
+                    }
+                });
+            }
+
             this.running = false;
 
             this.hrm.stop();
+            this.acc.stop();
 
             Application.switchToWithState('Summary', this.eventCount);
         } else {
+            if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+                messaging.peerSocket.send({
+                    command: "START_SESSION",
+                    data: {
+                        sessionIdentifier: this.session.getIdentifier(),
+                        startTime: Date.now()
+                    }
+                });
+            }
             this.running = true;
 
             this.hrm.start();
+            this.acc.start();
 
             let sessionMixedText = $('#sessionMixedText');
             let sessionMixedTextHeader = sessionMixedText.getElementById("header");

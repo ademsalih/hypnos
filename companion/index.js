@@ -24,9 +24,8 @@ messaging.peerSocket.addEventListener("message", (evt) => {
     let command = message.command;
 
     switch (command) {
-        case "DATA":
-            let data = message.data;
-            websocket.send(JSON.stringify(data));
+        case "ADD_READING":
+            websocket.send(JSON.stringify(message));
             break;
         case "SEARCH":
             console.log("Received new session request from Ionic...")
@@ -42,6 +41,15 @@ messaging.peerSocket.addEventListener("message", (evt) => {
             break;
         case "STOP_SEARCH":
             websocket.stop();
+            break;
+        case "INIT_SESSION":
+            websocket.send(JSON.stringify(message));
+            break;
+        case "START_SESSION":
+            websocket.send(JSON.stringify(message));
+            break;
+        case "STOP_SESSION":
+            websocket.send(JSON.stringify(message));
             break;
         default:
             break;

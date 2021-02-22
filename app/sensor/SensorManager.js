@@ -5,6 +5,7 @@ import { HeartRateSensor } from "heart-rate";
 
 export class SensorManager {
     SENSORS = []
+    _onReadingCallback;
 
     constructor() {
         const accelerometer = new Accelerometer();
@@ -12,6 +13,10 @@ export class SensorManager {
 
         this.SENSORS.push(accelerometer);
         this.SENSORS.push(hrm);
+    }
+
+    setOnReadingCallback(f) {
+        this._onReadingCallback = f;
     }
 
     start(sensor) {
@@ -24,12 +29,12 @@ export class SensorManager {
         sensor.stop();
     }
 
-    startAll() {
+    startAllSensors() {
         console.log(`Starting all sensors (${this.SENSORS.length})`)
         this.SENSORS.forEach(sensor => sensor.start())
     }
 
-    stopAll() {
+    stopAllSensors() {
         this.SENSORS.forEach(sensor => sensor.stop())
     }
 
