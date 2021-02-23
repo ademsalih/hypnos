@@ -6,7 +6,6 @@ import { HeartRateSensor } from "heart-rate";
 import { HeartRateReading } from '../../reading/HeartRateReading';
 import * as messaging from "messaging";
 import Session from '../../sensor/Session';
-import { SensorManager } from '../../sensor/SensorManager';
 
 const $ = $at( '#recordView' );
 
@@ -17,17 +16,19 @@ export class RecordView extends View {
     running = false;
     eventCount;
     session;
-    sessionControlButton = $('#sessionControlButton');
+    sessionControlButton;
     hrm = new HeartRateSensor({ frequency: 1});
     acc = new Accelerometer({ frequency: 1});
 
-    sensorManager;
     
     onMount(){
         console.log("[RecordView] onMount()");
+
+        this.sessionControlButton = $('#sessionControlButton');
         
         messaging.peerSocket.addEventListener("message", this.onMessageHandler);
-        this.sessionControlButton.addEventListener("click", this.startSessionButtonHandler.bind(this));
+
+        this.sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
 
         this.eventCount = 0;
         this.session = new Session();
@@ -76,8 +77,11 @@ export class RecordView extends View {
     }
 
     onUnmount(){
+        console.log("[RecordView] onUnmount()")
         this.hrm.onreading = null;
         this.acc.onreading = null;
+
+        this.sessionControlButton.removeEventListener("click", this.startSessionButtonHandler);
 
         messaging.peerSocket.removeEventListener("message", this.onMessageHandler);
         let sessionMixedText = $('#sessionMixedText');
@@ -88,15 +92,11 @@ export class RecordView extends View {
         sessionMixedTextHeader.style.fill = "fb-blue"
         sessionMixedTextCopy.text = "Press the button below to start a new session.";
     
-        let sessionControlButton = $('#sessionControlButton');
-        sessionControlButton.style.fill = "fb-mint"
-    
-        let sessionControlButtonText = sessionControlButton.getElementById("text");
-        sessionControlButtonText.text = "Start Session"
-        
 
-        let sessionControlButton = $('#sessionControlButton');
-        sessionControlButton.removeEventListener("click", this.startSessionButtonHandler);
+        this.sessionControlButton.style.fill = "fb-mint"
+    
+        let sessionControlButtonText = this.sessionControlButton.getElementById("text");
+        sessionControlButtonText.text = "Start Session"
     }
 
     onKeyBack(e) {
@@ -125,14 +125,15 @@ export class RecordView extends View {
      * This method in invoked when the Start Session button
      * is pressed and controls the sensors accordingly. 
      */
-    startSessionButtonHandler() {
+    startSessionButtonHandler = () => {
         if (this.running) {
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
                 messaging.peerSocket.send({
                     command: "STOP_SESSION",
                     data: {
                         sessionIdentifier: this.session.getIdentifier(),
-                        endTime: Date.now()
+                        endTime: Date.now(),
+                        readingsCount: this.eventCount
                     }
                 });
             }
@@ -144,6 +145,7 @@ export class RecordView extends View {
 
             Application.switchToWithState('Summary', this.eventCount);
         } else {
+            console.log("[RecordView] Sending START_SESSION...")
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
                 messaging.peerSocket.send({
                     command: "START_SESSION",
