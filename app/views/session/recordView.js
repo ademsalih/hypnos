@@ -19,7 +19,6 @@ export class RecordView extends View {
     sessionControlButton;
     hrm = new HeartRateSensor({ frequency: 1});
     acc = new Accelerometer({ frequency: 1});
-
     
     onMount(){
         console.log("[RecordView] onMount()");
@@ -92,7 +91,6 @@ export class RecordView extends View {
         sessionMixedTextHeader.style.fill = "fb-blue"
         sessionMixedTextCopy.text = "Press the button below to start a new session.";
     
-
         this.sessionControlButton.style.fill = "fb-mint"
     
         let sessionControlButtonText = this.sessionControlButton.getElementById("text");
