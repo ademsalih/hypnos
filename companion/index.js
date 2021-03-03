@@ -31,11 +31,6 @@ messaging.peerSocket.addEventListener("message", (evt) => {
             console.log("Received new session request from Ionic...")
             websocket.setOnOpen(() => {
                 messaging.peerSocket.send("CONNECT");
-
-                console.log(`[Companion] Sent to Nyx: ${message.data}`)
-
-                let data = message.data;
-                websocket.send(JSON.stringify(data));
             })
             websocket.start();
             break;
@@ -47,6 +42,7 @@ messaging.peerSocket.addEventListener("message", (evt) => {
             break;
         case "START_SESSION":
             websocket.send(JSON.stringify(message));
+            // set wake interval
             break;
         case "STOP_SESSION":
             websocket.send(JSON.stringify(message));

@@ -6,6 +6,7 @@ import { HeartRateSensor } from "heart-rate";
 import { HeartRateReading } from '../../reading/HeartRateReading';
 import * as messaging from "messaging";
 import Session from '../../sensor/Session';
+import { me as device } from "device";
 
 const $ = $at( '#recordView' );
 
@@ -18,7 +19,7 @@ export class RecordView extends View {
     session;
     sessionControlButton;
     hrm = new HeartRateSensor({ frequency: 1});
-    acc = new Accelerometer({ frequency: 1});
+    acc = new Accelerometer({ frequency: 3});
     
     onMount(){
         console.log("[RecordView] onMount()");
@@ -39,7 +40,8 @@ export class RecordView extends View {
             messaging.peerSocket.send({
                 command: "INIT_SESSION",
                 data: {
-                    sessionIdentifier: this.session.getIdentifier()
+                    sessionIdentifier: this.session.getIdentifier(),
+                    deviceModel: device.modelName
                 }
             });
         }
@@ -48,7 +50,7 @@ export class RecordView extends View {
     acceleroemterEventHandler() {
         const reading = new AccelerometerReading(this.session.getIdentifier(), this.acc.x, this.acc.y, this.acc.z);
 
-        this.eventCount += 1;
+        this.eventCount += 2;
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
             messaging.peerSocket.send({
