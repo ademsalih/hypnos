@@ -7,6 +7,8 @@ import { HeartRateReading } from '../../reading/HeartRateReading';
 import * as messaging from "messaging";
 import Session from '../../sensor/Session';
 import { me as device } from "device";
+import { Battery } from '../../sensor/sensors/battery';
+import { BatteryReading } from '../../reading/BatteryReading';
 
 const $ = $at( '#recordView' );
 
@@ -20,6 +22,7 @@ export class RecordView extends View {
     sessionControlButton;
     hrm = new HeartRateSensor({ frequency: 1});
     acc = new Accelerometer({ frequency: 3});
+    batt = new Battery({ frequency: 0.5});
     
     onMount(){
         console.log("[RecordView] onMount()");
@@ -34,7 +37,8 @@ export class RecordView extends View {
         this.session = new Session();
 
         this.hrm.onreading = this.heartRateEventHandler.bind(this);
-        this.acc.onreading = this.acceleroemterEventHandler.bind(this);
+        this.acc.onreading = this.accelerometerEventHandler.bind(this);
+        this.batt.onreading = this.batteryEventHandler.bind(this);
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
             messaging.peerSocket.send({
@@ -47,10 +51,10 @@ export class RecordView extends View {
         }
     }
 
-    acceleroemterEventHandler() {
+    accelerometerEventHandler() {
         const reading = new AccelerometerReading(this.session.getIdentifier(), this.acc.x, this.acc.y, this.acc.z);
 
-        this.eventCount += 2;
+        this.eventCount += 1;
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
             messaging.peerSocket.send({
@@ -62,6 +66,20 @@ export class RecordView extends View {
 
     heartRateEventHandler() {
         const reading = new HeartRateReading(this.session.getIdentifier(), this.hrm.heartRate);
+
+        this.eventCount += 1;
+
+        if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+            messaging.peerSocket.send({
+                command: "ADD_READING",
+                data: reading.get()
+            });
+        }
+    }
+
+    batteryEventHandler() {
+        console.log(`batteryEventHandler: ${this.batt.batteryLevel}`)
+        const reading = new BatteryReading(this.session.getIdentifier(), this.batt.batteryLevel);
 
         this.eventCount += 1;
 
@@ -142,6 +160,7 @@ export class RecordView extends View {
 
             this.hrm.stop();
             this.acc.stop();
+            this.batt.stop();
 
             Application.switchToWithState('Summary', this.eventCount);
         } else {
@@ -159,6 +178,7 @@ export class RecordView extends View {
 
             this.hrm.start();
             this.acc.start();
+            this.batt.start();
 
             let sessionMixedText = $('#sessionMixedText');
             let sessionMixedTextHeader = sessionMixedText.getElementById("header");

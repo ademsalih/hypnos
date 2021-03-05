@@ -1,9 +1,9 @@
 import { Reading } from "./Reading";
 
-export class BatteryReadings extends Reading {
+export class BatteryReading extends Reading {
 
     constructor(sessionID, batteryPercentage) {
-        let data = { percentage: batteryPercentage};
+        let data = { batteryLevel: batteryPercentage};
         super(sessionID, "BATTERY", data);
     }
 
