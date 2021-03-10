@@ -12,7 +12,7 @@
         <use href="#scrollview-item" height="33%">
             <!-- Settings Button -->
             <use id="settingsButton" href="#square-button" fill="fb-blue">
-                <set href="#text" attributeName="text-buffer" to="Settings" />
+                <set href="#text" attributeName="text-buffer" to="Preferences" />
             </use>
         </use>
 

@@ -1,5 +1,7 @@
+import FileHandler from '../../../lib/FileHandler';
 import { Application } from '../../../lib/view';
 import { View, $at } from '../../../lib/view'
+import * as fs from "fs";
 
 const $ = $at( '#toggleSensor' );
 
@@ -10,26 +12,14 @@ export class ToggleSensor extends View {
     onMount(){
         console.log("[Settings > ToggleSensor] onMount()")
 
-        let sensorsList = [
-            {
-                identifier: "Accelerometer",
-                enabled: true,
-                samplingRate: 30
-            },
-            {
-                identifier: "Gyroscope",
-                enabled: false,
-                samplingRate: 10
-            },
-            {
-                identifier: "Heart Rate",
-                enabled: true,
-                samplingRate: 10
-            }
-        ]
+        let fileHandler = new FileHandler();
+        let preferencesObject = fileHandler.readJSONFile("preferences.json");
+        let sensorList = preferencesObject.sensorList;
+
+        console.log(sensorList);
     
         let virtualList = $( '#my-list2' );
-        let elementCount = sensorsList.length
+        let elementCount = sensorList.length
     
         virtualList.delegate = {
             getTileInfo: function (index) {
@@ -42,8 +32,13 @@ export class ToggleSensor extends View {
             configureTile: function (tile, info) {
                 if (info.type == "my-pool2") {
     
-                    tile.firstChild.value = sensorsList[info.index].enabled ? 1 : 0;
-                    tile.firstChild.text = sensorsList[info.index].identifier;
+                    tile.firstChild.value = sensorList[info.index].enabled ? 1 : 0;
+                    tile.firstChild.text = sensorList[info.index].identifier;
+
+                    tile.firstChild.onclick = (evt) => {
+                        sensorList[info.index].enabled = !sensorList[info.index].enabled
+                        fs.writeFileSync("preferences.json", preferencesObject, "json");
+                    };
                 }
             }
         };

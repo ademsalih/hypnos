@@ -31,6 +31,14 @@ export default class FileHandler {
         fs.writeFileSync(fileName, content, "ascii");
     }
 
+    writeJSONFile(filename, data) {
+        fs.writeFileSync(filename, data, "json");
+    }
+
+    readJSONFile(filename) {
+        return fs.readFileSync(filename, "json");
+    }
+
     readRawFile(fileName) {
         let file = fs.openSync(fileName, "r")
         let buffer = new ArrayBuffer(this.fileSize(fileName));

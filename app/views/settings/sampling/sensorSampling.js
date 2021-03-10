@@ -1,3 +1,4 @@
+import FileHandler from '../../../lib/FileHandler';
 import { Application } from '../../../lib/view';
 import { View, $at } from '../../../lib/view'
 
@@ -9,23 +10,13 @@ export class SensorSampling extends View {
 
     onMount(){
         console.log("[Settings > Sampling] onMount()")
-        let sensorsList = [
-            {
-                title: "Accelerometer",
-                samplingRate: 10
-            },
-            {
-                title: "Heart Rate",
-                samplingRate: 15
-            },
-            {
-                title: "Gyroscope",
-                samplingRate: 20
-            }
-        ]
+
+        let fileHandler = new FileHandler();
+        let preferences = fileHandler.readJSONFile("preferences.json");
+        let sensorList = preferences.sensorList
     
         let virtualList = $('#settings-sampling-list');
-        let elementCount = sensorsList.length
+        let elementCount = sensorList.length
     
         virtualList.delegate = {
             getTileInfo: function (index) {
@@ -37,8 +28,8 @@ export class SensorSampling extends View {
             },
             configureTile: function (tile, info) {
                 if (info.type == "my-pool3") {
-                    tile.getElementById("sampling-text-main").text = sensorsList[info.index].title;
-                    tile.getElementById("sampling-text-secondary").text = `${sensorsList[info.index].samplingRate} Hz`;
+                    tile.getElementById("sampling-text-main").text = sensorList[info.index].identifier;
+                    tile.getElementById("sampling-text-secondary").text = `${sensorList[info.index].samplingRate} Hz`;
                 }
     
                 let touch = tile.getElementById("touch-me");
@@ -66,71 +57,3 @@ export class SensorSampling extends View {
     }
 
 }
-
-//##############################################################################################
-/* import document from "document";
-
-let views;
-
-export function init(_views) {
-    views = _views;
-    console.log("settings_sensor init()")
-    onMount();
-}
-
-function onMount() {
-    document.addEventListener("keypress", keyHandler);
-    initSettings();
-}
-
-function initSettings() {
-    let sensorsList = [
-        {
-            title: "Accelerometer",
-            samplingRate: 10
-        },
-        {
-            title: "Heart Rate",
-            samplingRate: 15
-        },
-        {
-            title: "Gyroscope",
-            samplingRate: 20
-        }
-    ]
-
-    let virtualList = document.getElementById("settings-sampling-list");
-    let elementCount = sensorsList.length
-
-    virtualList.delegate = {
-        getTileInfo: function (index) {
-            return {
-                type: "my-pool3",
-                value: "Menu item",
-                index: index
-            };
-        },
-        configureTile: function (tile, info) {
-            if (info.type == "my-pool3") {
-                tile.getElementById("sampling-text-main").text = sensorsList[info.index].title;
-                tile.getElementById("sampling-text-secondary").text = `${sensorsList[info.index].samplingRate} Hz`;
-            }
-
-            let touch = tile.getElementById("touch-me");
-            touch.onclick = evt => {
-                views.navigate("settings/samplingTumbler", info.index)
-            };
-        }
-    };
-
-    virtualList.length = elementCount;
-}
-
-function keyHandler(evt) {
-    if (evt.key === "back") {
-        evt.preventDefault();
-        views.navigate("settings/settings");
-    }
-}
- */
-

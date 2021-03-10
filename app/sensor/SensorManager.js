@@ -1,5 +1,4 @@
 import Sensor from "./Sensor"
-
 import { Accelerometer } from "accelerometer";
 import { HeartRateSensor } from "heart-rate";
 

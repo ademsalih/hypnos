@@ -15,12 +15,10 @@
         
         <use href="#my-tile-item" class="settings-tile-list-item">
             <set href="settings-text-main" attributeName="text-buffer" to="Sensors" />
-            <set href="settings-text-secondary" attributeName="text-buffer" to="A, G, HR" />
         </use>
 
         <use href="#my-tile-item" class="settings-tile-list-item">
             <set href="settings-text-main" attributeName="text-buffer" to="Sampling Rate" />
-            <set href="settings-text-secondary" attributeName="text-buffer" to="A: 30, G: 10, HR: 10" />
         </use>
 
         <use href="#my-tile-item" class="settings-tile-list-item">

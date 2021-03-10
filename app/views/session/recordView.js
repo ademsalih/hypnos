@@ -9,20 +9,21 @@ import Session from '../../sensor/Session';
 import { me as device } from "device";
 import { Battery } from '../../sensor/sensors/battery';
 import { BatteryReading } from '../../reading/BatteryReading';
+import { battery } from "power";
 
 const $ = $at( '#recordView' );
 
 export class RecordView extends View {
-    // Root view element used to show/hide the view.
-    el = $(); // Extract #screen-1 element.
+
+    el = $();
 
     running = false;
     eventCount;
     session;
     sessionControlButton;
     hrm = new HeartRateSensor({ frequency: 1});
-    acc = new Accelerometer({ frequency: 3});
-    batt = new Battery({ frequency: 0.5});
+    acc = new Accelerometer({ frequency: 5});
+    batt = new Battery({ frequency: 1});
     
     onMount(){
         console.log("[RecordView] onMount()");
@@ -45,7 +46,8 @@ export class RecordView extends View {
                 command: "INIT_SESSION",
                 data: {
                     sessionIdentifier: this.session.getIdentifier(),
-                    deviceModel: device.modelName
+                    deviceModel: device.modelName,
+                    deviceBatteryPercentage: battery.chargeLevel
                 }
             });
         }
@@ -131,7 +133,7 @@ export class RecordView extends View {
         console.log(`[RecordView] Message from Companion: ${evt.data}`)
         switch (evt.data) {
             case "DISCONNECT":
-                console.log("Lost connection, switing to Search...");
+                console.log("Lost connection, switching to Search...");
                 Application.switchTo('Search');
                 break;
             default:

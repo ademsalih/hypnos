@@ -2,6 +2,9 @@ import { Application } from '../lib/view';
 import { View, $at } from '../lib/view'
 import { me } from "appbit";
 import * as messaging from "messaging";
+import * as fs from "fs";
+import { SENSOR_DEFINITIONS } from '../sensor/sensorDefinitions';
+import FileHandler from '../lib/FileHandler'
 
 const $ = $at( '#main' );
 var connected = false;
@@ -15,6 +18,36 @@ export class Main extends View {
 
     onMount(){
         console.log("[Main] onMount()")
+
+        let fileHandler = new FileHandler();
+
+        if (!fileHandler.fileExists("preferences.json")) {
+            console.log("file doesnt exist")
+            fileHandler.writeJSONFile("preferences.json", { sensorList: []});
+        } else {
+            console.log("file exists")
+        }
+
+        let preferencesObject = fileHandler.readJSONFile("preferences.json");
+        console.log(JSON.stringify(preferencesObject))
+        let readSensorList = preferencesObject.sensorList;
+
+        SENSOR_DEFINITIONS.forEach(element => {
+            let sensor = element.sensor;
+
+            if (!readSensorList.some(e => e.sensor === sensor)) {
+                let newSensor = {
+                    sensor: sensor,
+                    identifier: element.displayName,
+                    enabled: true,
+                    samplingRate: 1
+                }
+
+                readSensorList.push(newSensor);
+            }
+        });
+
+        fileHandler.writeJSONFile("preferences.json", { sensorList: readSensorList});
 
         me.appTimeoutEnabled = false;
         
