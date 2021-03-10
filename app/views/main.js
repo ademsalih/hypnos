@@ -22,7 +22,7 @@ export class Main extends View {
         let fileHandler = new FileHandler();
 
         if (!fileHandler.fileExists("preferences.json")) {
-            console.log("file doesnt exist")
+            console.log("file doesn't exist")
             fileHandler.writeJSONFile("preferences.json", { sensorList: []});
         } else {
             console.log("file exists")
@@ -38,9 +38,12 @@ export class Main extends View {
             if (!readSensorList.some(e => e.sensor === sensor)) {
                 let newSensor = {
                     sensor: sensor,
-                    identifier: element.displayName,
+                    displayName: element.displayName,
                     enabled: true,
-                    samplingRate: 1
+                    sampling: {
+                        element: 0,
+                        rate: 1
+                    }
                 }
 
                 readSensorList.push(newSensor);

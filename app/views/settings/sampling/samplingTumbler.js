@@ -1,38 +1,62 @@
 import { Application } from '../../../lib/view';
 import { View, $at } from '../../../lib/view'
+import FileHandler from '../../../lib/FileHandler';
 
 const $ = $at( '#samplingTumbler' );
 
 export class SamplingTumbler extends View {
-    // Root view element used to show/hide the view.
-    el = $(); // Extract #screen-1 element.
 
-    onMount(){
+    el = $();
+    tumbler = $('#tumbler');
+    fileHandler = new FileHandler();
+
+    onMount(state){
         console.log("[Settings > Sampling > Sampling Rate] onMount()")
+        console.log(state.sensor);
 
-        let tumbler = $('#tumbler');
+        let preferences = this.fileHandler.readJSONFile("preferences.json");
+        let sensorList = preferences.sensorList
 
-        let selectedIndex = tumbler.value;
-        let selectedItem = tumbler.getElementById("item" + selectedIndex);
-        let selectedValue = selectedItem.getElementById("content").text;
+        const index = sensorList.map(e => e.displayName).indexOf(state.sensor);
+
+        this.tumbler.value = sensorList[index].sampling.element;
         
-        console.log(`index: ${selectedIndex} :: value: ${selectedValue}`);
-        
-        //selectedItem.getElementById("content").text = "New Value";
+        this.tumbler.addEventListener("select", () => {
+            console.log("selectChanged")
+            let selectedIndex = this.tumbler.value;
+            let selectedItem = this.tumbler.getElementById("item" + selectedIndex);
+            let selectedValue = selectedItem.getElementById("content").text;
+
+            const index = sensorList.map(e => e.displayName).indexOf(state.sensor);
+
+            sensorList[index].sampling.element = selectedIndex;
+            sensorList[index].sampling.rate = selectedValue;
+
+            this.fileHandler.writeJSONFile("preferences.json", preferences)
+        });
     }
 
     onRender(){
+        console.log("[Settings > Sampling > Sampling Rate] onRender()")
     }
 
     onUnmount(){
-    }
-
-    onKeyUp(){
+        console.log("[Settings > Sampling > Sampling Rate] onUnmount()")
     }
 
     onKeyBack(e) {
         e.preventDefault();
         Application.switchTo('SensorSampling');
     }
+
+    onKeyUp(){
+
+    }
+
+    onKeyDown() {
+
+    }
+
+
 
 }

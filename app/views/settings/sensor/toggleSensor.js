@@ -33,7 +33,7 @@ export class ToggleSensor extends View {
                 if (info.type == "my-pool2") {
     
                     tile.firstChild.value = sensorList[info.index].enabled ? 1 : 0;
-                    tile.firstChild.text = sensorList[info.index].identifier;
+                    tile.firstChild.text = sensorList[info.index].displayName;
 
                     tile.firstChild.onclick = (evt) => {
                         sensorList[info.index].enabled = !sensorList[info.index].enabled

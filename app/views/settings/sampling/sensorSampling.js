@@ -28,13 +28,15 @@ export class SensorSampling extends View {
             },
             configureTile: function (tile, info) {
                 if (info.type == "my-pool3") {
-                    tile.getElementById("sampling-text-main").text = sensorList[info.index].identifier;
-                    tile.getElementById("sampling-text-secondary").text = `${sensorList[info.index].samplingRate} Hz`;
+                    tile.getElementById("sampling-text-main").text = sensorList[info.index].displayName;
+                    tile.getElementById("sampling-text-secondary").text = `${sensorList[info.index].sampling.rate} Hz`;
                 }
     
                 let touch = tile.getElementById("touch-me");
                 touch.onclick = evt => {
-                    Application.switchTo('SamplingTumbler');
+                    Application.switchToWithState('SamplingTumbler', {
+                        sensor: sensorList[info.index].displayName
+                    });
                 };
             }
         };
