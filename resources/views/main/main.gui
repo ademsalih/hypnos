@@ -1,20 +1,38 @@
 <svg id="main" display="none">
     <link rel="stylesheet" href="styles.css" />
-    <use href="#scrollview">
+   <!--  <use href="#scrollview">
 
         <use href="#scrollview-item" height="33%">
-            <!-- New Session Button -->
+
             <use id="newSessionButton" href="#square-button" fill="fb-blue">
                 <set href="#text" attributeName="text-buffer" to="New Session" />
             </use>
         </use>
 
         <use href="#scrollview-item" height="33%">
-            <!-- Settings Button -->
+
             <use id="settingsButton" href="#square-button" fill="fb-blue">
                 <set href="#text" attributeName="text-buffer" to="Preferences" />
             </use>
         </use>
 
+    </use> -->
+
+    <use id="mixedtext" href="#mixed-text-left-mid" height="100%" fill="fb-blue">
+        <set href="#header/text" attributeName="text-buffer" to="Welcome"/>
+        <set href="#copy/text" attributeName="text-buffer" to="Press Play to record a new session."/>
+    </use>
+
+    <!-- TOP RIGHT -->
+    <use id="newSessionButton" href="#combo-button-upper-right" fill="fb-blue">
+        <set href="combo-button-icon" attributeName="href" to="icons/play.png"/>
+        <set href="combo-button-icon-press" attributeName="href" to="icons/play_press.png"/>
+        <set href="combo-button-stroke" attributeName="display" to="inline"/>
+    </use>
+    <!-- BOTTOM RIGHT -->
+    <use id="settingsButton" href="#combo-button-lower-right" fill="fb-blue" class="noe">
+        <set href="combo-button-icon" attributeName="href" to="icons/settings.png"/>
+        <set href="combo-button-icon-press" attributeName="href" to="icons/settings_press.png"/>
+        <set href="combo-button-stroke" attributeName="display" to="inline"/>
     </use>
 </svg>
