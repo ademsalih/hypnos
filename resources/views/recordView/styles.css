@@ -1,7 +1,19 @@
 #sessionMixedText {
-    fill: "fb-blue";
+    fill: "fb-mint";
 }
 
 #sessionControlButton {
     fill: "fb-mint";
+    x: 0;
+    y: 70%;
+}
+
+#clock {
+    x: "100%-6";
+    y: "28";
+    font-family: "System-Regular";
+    fill: "#D3D3D3";
+    text-anchor: "end";
+    font-size: "25";
+    font-weight: "bold";
 }

@@ -10,6 +10,7 @@ import { me as device } from "device";
 import { Battery } from '../../sensor/sensors/battery';
 import { BatteryReading } from '../../reading/BatteryReading';
 import { battery } from "power";
+import clock from "clock";
 
 const $ = $at( '#recordView' );
 
@@ -22,11 +23,30 @@ export class RecordView extends View {
     session;
     sessionControlButton;
     hrm = new HeartRateSensor({ frequency: 1});
-    acc = new Accelerometer({ frequency: 5});
+    acc = new Accelerometer({ frequency: 2});
     batt = new Battery({ frequency: 1});
+    clockLabel;
+
+    currentTimeLabel() {
+        let now = new Date();
+        let hour = now.getHours();
+        let minute = now.getMinutes();
+        return `${(hour.toString()).padStart(2,'0')}:${(minute.toString()).padStart(2,'0')}`;
+    }
+
+    tickHandler() {
+        this.clockLabel.text = this.currentTimeLabel();
+    }
     
     onMount(){
         console.log("[RecordView] onMount()");
+
+        this.clockLabel = $('#clock');
+        this.clockLabel.text = this.currentTimeLabel();
+
+        clock.granularity = "minutes";
+
+        clock.addEventListener("tick", this.tickHandler.bind(this));
 
         this.sessionControlButton = $('#sessionControlButton');
         
@@ -94,7 +114,7 @@ export class RecordView extends View {
     }
 
     onRender(){
-
+        
     }
 
     onUnmount(){
@@ -109,8 +129,8 @@ export class RecordView extends View {
         let sessionMixedTextHeader = sessionMixedText.getElementById("header");
         let sessionMixedTextCopy = sessionMixedText.getElementById("copy");
     
-        sessionMixedTextHeader.text = "Connected to Nyx";
-        sessionMixedTextHeader.style.fill = "fb-blue"
+        sessionMixedTextHeader.text = "Connected";
+        sessionMixedTextHeader.style.fill = "fb-mint"
         sessionMixedTextCopy.text = "Press the button below to start a new session.";
     
         this.sessionControlButton.style.fill = "fb-mint"
@@ -198,6 +218,11 @@ export class RecordView extends View {
         }
     }
 
-    
+}
 
+String.prototype.padStart = function(length, padString) {
+    var str = this;
+    while (str.length < length)
+        str = padString + str;
+    return str;
 }
