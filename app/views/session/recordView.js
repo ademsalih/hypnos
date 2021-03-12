@@ -23,13 +23,17 @@ export class RecordView extends View {
     eventCount;
     session;
     sessionControlButton;
-    hrm = new HeartRateSensor({ frequency: 1});
-    acc = new Accelerometer({ frequency: 2});
-    batt = new Battery({ frequency: 1});
+    hrm = new HeartRateSensor();
+    acc = new Accelerometer();
+    batt = new Battery();
     clockLabel;
+    gradientRect;
     
     onMount(){
         console.log("[RecordView] onMount()");
+
+        this.gradientRect = $('#recordViewGradient');
+        this.gradientRect.gradient.colors.c1 = "#266135";
 
         ///////////////////////////////////////////////////////////////////////////////
         
@@ -85,7 +89,6 @@ export class RecordView extends View {
 
     accelerometerEventHandler() {
         const reading = new AccelerometerReading(this.session.getIdentifier(), this.acc.x, this.acc.y, this.acc.z);
-        console.log(JSON.stringify(reading.get()));
 
         this.eventCount += 1;
 
@@ -226,6 +229,7 @@ export class RecordView extends View {
         
             let sessionControlButtonText = sessionControlButton.getElementById("text");
             sessionControlButtonText.text = "End Session"
+            this.gradientRect.gradient.colors.c1 = "#6D2120";
         }
     }
 

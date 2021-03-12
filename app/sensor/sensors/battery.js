@@ -7,6 +7,10 @@ export class Battery {
     handler;
     batteryLevel;
 
+    constructor() {
+        
+    }
+
     constructor(init) {
         if ("frequency" in init) {
             let frequency = init.frequency;
