@@ -2,45 +2,36 @@
     <link rel="stylesheet" href="styles.css" />
     <use id="tumbler" href="#tumblerview">
 
-        <use id="item0" href="#tumbler-item" class="item">
-            <text id="content">1</text>
-        </use>
-
-        <use id="item1" href="#tumbler-item" class="item">
-            <text id="content">2</text>
-        </use>
-
-        <use id="item2" href="#tumbler-item" class="item">
-            <text id="content">5</text>
-        </use>
-
-        <use id="item3" href="#tumbler-item" class="item">
-            <text id="content">10</text>
-        </use>
-
-        <use id="item4" href="#tumbler-item" class="item">
-            <text id="content">15</text>
-        </use>
-
-        <use id="item5" href="#tumbler-item" class="item">
-            <text id="content">20</text>
-        </use>
-
-        <use id="item6" href="#tumbler-item" class="item">
-            <text id="content">30</text>
-        </use>
-
-        <use id="item7" href="#tumbler-item" class="item">
-            <text id="content">40</text>
-        </use>
-
-        <use id="item8" href="#tumbler-item" class="item">
-            <text id="content">50</text>
-        </use>
-
-        <use id="item9" href="#tumbler-item" class="item">
-            <text id="content">100</text>
-        </use>
+        <use id="item0" href="#tumbler-item" class="item"><text id="content">0.1</text></use>
+        <use id="item1" href="#tumbler-item" class="item"><text id="content">0.5</text></use>
+        <use id="item2" href="#tumbler-item" class="item"><text id="content">1</text></use>
+        <use id="item3" href="#tumbler-item" class="item"><text id="content">2</text></use>
+        <use id="item4" href="#tumbler-item" class="item"><text id="content">3</text></use>
+        <use id="item5" href="#tumbler-item" class="item"><text id="content">4</text></use>
+        <use id="item6" href="#tumbler-item" class="item"><text id="content">5</text></use>
+        <use id="item7" href="#tumbler-item" class="item"><text id="content">6</text></use>
+        <use id="item8" href="#tumbler-item" class="item"><text id="content">7</text></use>
+        <use id="item9" href="#tumbler-item" class="item"><text id="content">8</text></use>
+        <use id="item10" href="#tumbler-item" class="item"><text id="content">9</text></use>
+        <use id="item11" href="#tumbler-item" class="item"><text id="content">10</text></use>
+        <use id="item12" href="#tumbler-item" class="item"><text id="content">11</text></use>
+        <use id="item13" href="#tumbler-item" class="item"><text id="content">12</text></use>
+        <use id="item14" href="#tumbler-item" class="item"><text id="content">13</text></use>
+        <use id="item15" href="#tumbler-item" class="item"><text id="content">14</text></use>
+        <use id="item16" href="#tumbler-item" class="item"><text id="content">15</text></use>
+        <use id="item17" href="#tumbler-item" class="item"><text id="content">16</text></use>
+        <use id="item18" href="#tumbler-item" class="item"><text id="content">17</text></use>
+        <use id="item19" href="#tumbler-item" class="item"><text id="content">18</text></use>
+        <use id="item20" href="#tumbler-item" class="item"><text id="content">19</text></use>
+        <use id="item20" href="#tumbler-item" class="item"><text id="content">20</text></use>
+        <use id="item21" href="#tumbler-item" class="item"><text id="content">25</text></use>
+        <use id="item22" href="#tumbler-item" class="item"><text id="content">30</text></use>
+        <use id="item23" href="#tumbler-item" class="item"><text id="content">35</text></use>
+        <use id="item24" href="#tumbler-item" class="item"><text id="content">40</text></use>
+        <use id="item25" href="#tumbler-item" class="item"><text id="content">45</text></use>
+        <use id="item26" href="#tumbler-item" class="item"><text id="content">50</text></use>
+        <use id="item27" href="#tumbler-item" class="item"><text id="content">55</text></use>
+        <use id="item28" href="#tumbler-item" class="item"><text id="content">60</text></use>
     </use>
 
     <text fill="white" x="60%" y="60%" font-size="40">Hz</text>

@@ -11,6 +11,7 @@ import { Battery } from '../../sensor/sensors/battery';
 import { BatteryReading } from '../../reading/BatteryReading';
 import { battery } from "power";
 import clock from "clock";
+import FileHandler from '../../lib/FileHandler';
 
 const $ = $at( '#recordView' );
 
@@ -26,26 +27,35 @@ export class RecordView extends View {
     acc = new Accelerometer({ frequency: 2});
     batt = new Battery({ frequency: 1});
     clockLabel;
-
-    currentTimeLabel() {
-        let now = new Date();
-        let hour = now.getHours();
-        let minute = now.getMinutes();
-        return `${(hour.toString()).padStart(2,'0')}:${(minute.toString()).padStart(2,'0')}`;
-    }
-
-    tickHandler() {
-        this.clockLabel.text = this.currentTimeLabel();
-    }
     
     onMount(){
         console.log("[RecordView] onMount()");
 
+        ///////////////////////////////////////////////////////////////////////////////
+        
+        let fHandler = new FileHandler();
+        let preferences = fHandler.readJSONFile("preferences.json");
+        let sensorList = preferences.sensorList;
+
+        let accelerometerFreq = (sensorList.filter( i => i.sensor == "ACCELEROMETER_SENSOR"))[0].sampling.rate;
+        let accFreq = parseInt(accelerometerFreq, 10);
+        this.acc.setOptions({ frequency: accFreq});
+
+        let batteryFreq = (sensorList.filter( i => i.sensor == "BATTERY_SENSOR"))[0].sampling.rate;
+
+        console.log(batteryFreq)
+
+        let battFreq = parseFloat(batteryFreq, 10);
+
+        console.log(battFreq)
+
+        this.batt.setFrequency(battFreq);
+
+        ///////////////////////////////////////////////////////////////////////////////
+
         this.clockLabel = $('#clock');
         this.clockLabel.text = this.currentTimeLabel();
-
         clock.granularity = "minutes";
-
         clock.addEventListener("tick", this.tickHandler.bind(this));
 
         this.sessionControlButton = $('#sessionControlButton');
@@ -75,6 +85,7 @@ export class RecordView extends View {
 
     accelerometerEventHandler() {
         const reading = new AccelerometerReading(this.session.getIdentifier(), this.acc.x, this.acc.y, this.acc.z);
+        console.log(JSON.stringify(reading.get()));
 
         this.eventCount += 1;
 
@@ -216,6 +227,17 @@ export class RecordView extends View {
             let sessionControlButtonText = sessionControlButton.getElementById("text");
             sessionControlButtonText.text = "End Session"
         }
+    }
+
+    currentTimeLabel() {
+        let now = new Date();
+        let hour = now.getHours();
+        let minute = now.getMinutes();
+        return `${(hour.toString()).padStart(2,'0')}:${(minute.toString()).padStart(2,'0')}`;
+    }
+
+    tickHandler() {
+        this.clockLabel.text = this.currentTimeLabel();
     }
 
 }

@@ -1,7 +1,7 @@
 <svg id="recordView" display="none" viewport-fill="yellow">
     <link rel="stylesheet" href="styles.css" />
 
-    <text id="clock">00:00</text>
+    <text id="clock"></text>
 
     <!-- Welcome Header and Description -->
     <use id="sessionMixedText" href="#mixed-text-left-top" height="100%">

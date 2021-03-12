@@ -10,10 +10,11 @@
 
 #clock {
     x: "100%-8";
-    y: "28";
+    y: "30";
     font-family: "System-Regular";
-    fill: "#D3D3D3";
+    fill: "#EAEAEA";
+    text-length: 5;
     text-anchor: "end";
-    font-size: "25";
+    font-size: "28";
     font-weight: "bold";
 }

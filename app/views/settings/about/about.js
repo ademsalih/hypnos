@@ -11,7 +11,7 @@ export class About extends View {
         console.log("[Settings > About] onMount()")
 
         let text = $('#about-text');
-        text.text = "Sleepy\nVersion 0.5.0\nDeveloped by Adem Salih";
+        text.text = "Hypnos\nVersion 0.7.0\nDeveloped by Adem Salih";
     }
 
     onRender(){

@@ -41,7 +41,7 @@ export class Main extends View {
                     displayName: element.displayName,
                     enabled: true,
                     sampling: {
-                        element: 0,
+                        element: 2,
                         rate: 1
                     }
                 }
