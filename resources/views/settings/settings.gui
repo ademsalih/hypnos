@@ -20,9 +20,5 @@
         <use href="#my-tile-item" class="settings-tile-list-item">
             <set href="settings-text-main" attributeName="text-buffer" to="Sampling Rate" />
         </use>
-
-        <use href="#my-tile-item" class="settings-tile-list-item">
-            <set href="settings-text-main" attributeName="text-buffer" to="About" />
-        </use>
     </use>
 </svg>

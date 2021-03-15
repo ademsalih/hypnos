@@ -12,17 +12,17 @@
 
     <use id="mixedtext" href="#mixed-text-left-mid" height="100%" fill="fb-blue">
         <set href="#header/text" attributeName="text-buffer" to="Hypnos"/>
-        <set href="#copy/text" attributeName="text-buffer" to="Press Play to record a new session."/>
+        <set href="#copy/text" attributeName="text-buffer" to="Waiting for Nyx..."/>
     </use>
 
-    <!-- TOP RIGHT -->
-    <use id="newSessionButton" href="#combo-button-upper-right" fill="fb-blue">
+    <use id="spinner" href="#spinner" />
+
+    <use id="newSessionButton" href="#combo-button-upper-right" fill="fb-blue" display="none">
         <set href="combo-button-icon" attributeName="href" to="icons/play.png"/>
         <set href="combo-button-icon-press" attributeName="href" to="icons/play_press.png"/>
         <set href="combo-button-stroke" attributeName="display" to="inline"/>
     </use>
     
-    <!-- BOTTOM RIGHT -->
     <use id="settingsButton" href="#combo-button-lower-right" fill="fb-blue" class="noe">
         <set href="combo-button-icon" attributeName="href" to="icons/settings.png"/>
         <set href="combo-button-icon-press" attributeName="href" to="icons/settings_press.png"/>

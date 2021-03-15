@@ -1,9 +1,9 @@
 #sessionMixedText {
-    fill: "fb-mint";
+    fill: "fb-blue";
 }
 
 #sessionControlButton {
-    fill: "fb-mint";
+    fill: "fb-blue";
     x: 0;
     y: 70%;
 }
@@ -12,9 +12,9 @@
     x: "100%-8";
     y: "30";
     font-family: "System-Regular";
-    fill: "#EAEAEA";
+    fill: "#F5F5F5";
     text-length: 5;
     text-anchor: "end";
-    font-size: "28";
+    font-size: "30";
     font-weight: "bold";
 }

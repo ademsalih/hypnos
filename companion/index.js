@@ -1,5 +1,7 @@
 import * as messaging from "messaging";
 import { WebSocketHandler } from "./WebSocketHandler";
+import { inbox } from "file-transfer";
+import * as cbor from "cbor";
 
 const port = 8887;
 const host = "127.0.0.1";
@@ -19,8 +21,25 @@ messaging.peerSocket.addEventListener("open", (evt) => {
     console.log("Ready to send or receive messages");
 });
 
+
+////////////////////////////////////////////////////////////////////////////////////
+
+async function processAllFiles() {
+    let file;
+    while ((file = await inbox.pop())) {
+        const payload = await file.cbor();
+        console.log(`ITEMS COUNT: ${payload.data.items.x.length}`)
+    }
+}
+
+
+inbox.addEventListener("newfile", processAllFiles);
+
+processAllFiles()
+//////////////////////////////////////////
+
 messaging.peerSocket.addEventListener("message", (evt) => {
-    let message = evt.data
+    let message = cbor.decode(evt.data);
     let command = message.command;
 
     switch (command) {
@@ -42,7 +61,6 @@ messaging.peerSocket.addEventListener("message", (evt) => {
             break;
         case "START_SESSION":
             websocket.send(JSON.stringify(message));
-            // set wake interval
             break;
         case "STOP_SESSION":
             websocket.send(JSON.stringify(message));
@@ -51,3 +69,5 @@ messaging.peerSocket.addEventListener("message", (evt) => {
             break;
     }
 });
+
+

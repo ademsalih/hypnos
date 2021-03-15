@@ -4,18 +4,18 @@ import { View, $at } from '../../lib/view'
 const $ = $at( '#summary' );
 
 export class Summary extends View {
-    // Root view element used to show/hide the view.
-    el = $(); // Extract #screen-1 element.
 
-    sessionControlButton = $('#summaryOKButton');
+    el = $();
 
     onMount(events){
-        this.sessionControlButton.addEventListener("click", this.summaryOKButtonHandler);
+        const sessionControlButton = $('#summaryOKButton');
+        sessionControlButton.addEventListener("click", () => {
+            Application.switchTo('Main');
+        });
 
-        let sessionMixedText = $('#sessionMixedText');
-        let sessionMixedTextCopy = sessionMixedText.getElementById("copy");
-        sessionMixedTextCopy.textLength = 20;
-        sessionMixedTextCopy.text = events + " readings";
+        const sessionMixedText = $('#sessionMixedText')
+        const sessionMixedTextCopy = sessionMixedText.getElementById("copy");
+        sessionMixedTextCopy.text = (events || 0) + " readings";
     }
 
     onRender(){
@@ -23,17 +23,12 @@ export class Summary extends View {
     }
 
     onUnmount(){
-        this.sessionControlButton.removeEventListener("click", this.summaryOKButtonHandler);
+        const sessionControlButton = $('#summaryOKButton');
+        sessionControlButton.onclick = null;
     }
 
     onKeyBack(e) {
         e.preventDefault();
-        Application.switchTo('Main');
-    }
-
-    summaryOKButtonHandler() {
-        Application.switchTo('Main');
     }
 
 }
-

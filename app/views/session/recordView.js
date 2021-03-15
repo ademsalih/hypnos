@@ -1,17 +1,24 @@
 import { Application } from '../../lib/view';
 import { View, $at } from '../../lib/view'
-import { AccelerometerReading } from '../../reading/AccelerometerReading';
+
 import { Accelerometer } from "accelerometer";
 import { HeartRateSensor } from "heart-rate";
-import { HeartRateReading } from '../../reading/HeartRateReading';
-import * as messaging from "messaging";
-import Session from '../../sensor/Session';
-import { me as device } from "device";
 import { Battery } from '../../sensor/sensors/battery';
+import { Gyroscope } from "gyroscope";
+
+import { AccelerometerBatchReading } from '../../reading/AccelerometerBatchReading';
+import { HeartRateReading } from '../../reading/HeartRateReading';
+
+import { PreferencesManager } from '../../lib/PreferenceManager';
+import Session from '../../sensor/Session';
+
+//import clock from "clock";
+import { outbox } from "file-transfer";
+import * as cbor from "cbor";
+import { me as device } from "device";
+import * as messaging from "messaging";
 import { BatteryReading } from '../../reading/BatteryReading';
-import { battery } from "power";
-import clock from "clock";
-import FileHandler from '../../lib/FileHandler';
+import { GyroscopeBatchReading } from '../../reading/GyroscopeBatchReading';
 
 const $ = $at( '#recordView' );
 
@@ -22,51 +29,23 @@ export class RecordView extends View {
     running = false;
     eventCount;
     session;
-    sessionControlButton;
     hrm = new HeartRateSensor();
     acc = new Accelerometer();
     batt = new Battery();
-    clockLabel;
-    gradientRect;
+    gyro = new Gyroscope();
     
     onMount(){
         console.log("[RecordView] onMount()");
 
-        this.gradientRect = $('#recordViewGradient');
-        this.gradientRect.gradient.colors.c1 = "#266135";
+        const prefManager = new PreferencesManager();
+        this.acc.setOptions({ frequency: prefManager.getSensorFrequencyFor("ACCELEROMETER_SENSOR"), batch: 25 });
+        this.batt.setFrequency(prefManager.getSensorFrequencyFor("BATTERY_SENSOR"));
+        this.gyro.setOptions({ frequency: prefManager.getSensorFrequencyFor("GYROSCOPE_SENSOR"), batch: 25 });
 
-        ///////////////////////////////////////////////////////////////////////////////
-        
-        let fHandler = new FileHandler();
-        let preferences = fHandler.readJSONFile("preferences.json");
-        let sensorList = preferences.sensorList;
+        const sessionControlButton = $('#sessionControlButton');
+        sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
 
-        let accelerometerFreq = (sensorList.filter( i => i.sensor == "ACCELEROMETER_SENSOR"))[0].sampling.rate;
-        let accFreq = parseInt(accelerometerFreq, 10);
-        this.acc.setOptions({ frequency: accFreq});
-
-        let batteryFreq = (sensorList.filter( i => i.sensor == "BATTERY_SENSOR"))[0].sampling.rate;
-
-        console.log(batteryFreq)
-
-        let battFreq = parseFloat(batteryFreq, 10);
-
-        console.log(battFreq)
-
-        this.batt.setFrequency(battFreq);
-
-        ///////////////////////////////////////////////////////////////////////////////
-
-        this.clockLabel = $('#clock');
-        this.clockLabel.text = this.currentTimeLabel();
-        clock.granularity = "minutes";
-        clock.addEventListener("tick", this.tickHandler.bind(this));
-
-        this.sessionControlButton = $('#sessionControlButton');
-        
         messaging.peerSocket.addEventListener("message", this.onMessageHandler);
-
-        this.sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
 
         this.eventCount = 0;
         this.session = new Session();
@@ -74,56 +53,110 @@ export class RecordView extends View {
         this.hrm.onreading = this.heartRateEventHandler.bind(this);
         this.acc.onreading = this.accelerometerEventHandler.bind(this);
         this.batt.onreading = this.batteryEventHandler.bind(this);
+        this.gyro.onreading = this.gyroscopeEventHandler.bind(this);
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-            messaging.peerSocket.send({
+            let data = cbor.encode({
                 command: "INIT_SESSION",
                 data: {
                     sessionIdentifier: this.session.getIdentifier(),
-                    deviceModel: device.modelName,
-                    deviceBatteryPercentage: battery.chargeLevel
+                    deviceModel: device.modelName
                 }
-            });
+            })
+            messaging.peerSocket.send(data);
         }
     }
 
     accelerometerEventHandler() {
-        const reading = new AccelerometerReading(this.session.getIdentifier(), this.acc.x, this.acc.y, this.acc.z);
+        let x = Array.prototype.slice.call(this.acc.readings.x);
+        let y = Array.prototype.slice.call(this.acc.readings.y);
+        let z = Array.prototype.slice.call(this.acc.readings.z);
+        let ts = Array.prototype.slice.call(this.acc.readings.timestamp);
+        
+        /* let max = this.acc.readings.timestamp.length;
+        for (let i = 0; i < max; i++) {
+            x.push(this.acc.readings.x[i]);
+            y.push(this.acc.readings.y[i]);
+            z.push(this.acc.readings.z[i]);
+            ts.push(this.acc.readings.timestamp[i]);
+        } */
 
-        this.eventCount += 1;
+        /* let i = this.acc.readings.timestamp.length - 1;
+        do {
+            x.push(this.acc.readings.x[i]);
+            y.push(this.acc.readings.y[i]);
+            z.push(this.acc.readings.z[i]);
+            timestamp.push(this.acc.readings.timestamp[i]);
+        } while(--i); */
+
+        let data = cbor.encode({
+            command: "ADD_READING",
+            data: new AccelerometerBatchReading(this.session.getIdentifier(), x, y, z, ts).get()
+        });
+
+        /* outbox.enqueue("accelerometer.json", data)
+        .then((ft) => {
+            console.log(`Transfer of $‌{ft.name} successfully queued.`);
+            x = y = z = timestamp = null;
+            data = null;
+            max = null;
+        })
+        .catch((error) => {
+            console.log(`Failed to schedule transfer: $‌{error}`);
+        }) */
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-            messaging.peerSocket.send({
-                command: "ADD_READING",
-                data: reading.get()
-            })
+            messaging.peerSocket.send(data)
+            x = null;
+            y = null;
+            z = null;
+            ts = null;
+            data = null;
+            //i = null;
+            this.eventCount += 25;
+        } else {
+            // Socket is close, buffer data in drive
         }
     }
 
     heartRateEventHandler() {
-        const reading = new HeartRateReading(this.session.getIdentifier(), this.hrm.heartRate);
-
-        this.eventCount += 1;
+        let data = cbor.encode({
+            command: "ADD_READING",
+            data: new HeartRateReading(this.session.getIdentifier(), this.hrm.heartRate).get()
+        });
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-            messaging.peerSocket.send({
-                command: "ADD_READING",
-                data: reading.get()
-            });
+            messaging.peerSocket.send(data);
+            this.eventCount += 1;
         }
     }
 
     batteryEventHandler() {
-        console.log(`batteryEventHandler: ${this.batt.batteryLevel}`)
-        const reading = new BatteryReading(this.session.getIdentifier(), this.batt.batteryLevel);
-
-        this.eventCount += 1;
+        let data = cbor.encode({
+            command: "ADD_READING",
+            data: new BatteryReading(this.session.getIdentifier(), this.batt.batteryLevel).get()
+        });
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-            messaging.peerSocket.send({
-                command: "ADD_READING",
-                data: reading.get()
-            });
+            messaging.peerSocket.send(data);
+            this.eventCount += 1;
+        }
+    }
+
+    gyroscopeEventHandler() {
+        let x = Array.prototype.slice.call(this.gyro.readings.x);
+        let y = Array.prototype.slice.call(this.gyro.readings.y);
+        let z = Array.prototype.slice.call(this.gyro.readings.z);
+        let ts = Array.prototype.slice.call(this.gyro.readings.timestamp);
+
+        let data = cbor.encode({
+            command: "ADD_READING",
+            data: new GyroscopeBatchReading(this.session.getIdentifier(), x, y, z, ts).get()
+        });
+
+        if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+            messaging.peerSocket.send(data);
+            this.eventCount += 25;
         }
     }
 
@@ -133,23 +166,26 @@ export class RecordView extends View {
 
     onUnmount(){
         console.log("[RecordView] onUnmount()")
-        this.hrm.onreading = null;
         this.acc.onreading = null;
-
-        this.sessionControlButton.removeEventListener("click", this.startSessionButtonHandler);
+        this.hrm.onreading = null;
+        this.batt.onreading = null;
+        this.gyro.onreading = null;
 
         messaging.peerSocket.removeEventListener("message", this.onMessageHandler);
-        let sessionMixedText = $('#sessionMixedText');
-        let sessionMixedTextHeader = sessionMixedText.getElementById("header");
-        let sessionMixedTextCopy = sessionMixedText.getElementById("copy");
-    
-        sessionMixedTextHeader.text = "Connected";
-        sessionMixedTextHeader.style.fill = "fb-mint"
+
+        const sessionMixedText = $('#sessionMixedText');
+        const sessionMixedTextHeader = sessionMixedText.getElementById("header");
+        sessionMixedTextHeader.text = "New Session";
+        sessionMixedTextHeader.style.fill = "fb-blue"
+
+        const sessionMixedTextCopy = sessionMixedText.getElementById("copy");
         sessionMixedTextCopy.text = "Press the button below to start a new session.";
+
+        const sessionControlButton = $('#sessionControlButton');
+        sessionControlButton.removeEventListener("click", this.startSessionButtonHandler);
+        sessionControlButton.style.fill = "fb-blue"
     
-        this.sessionControlButton.style.fill = "fb-mint"
-    
-        let sessionControlButtonText = this.sessionControlButton.getElementById("text");
+        const sessionControlButtonText = sessionControlButton.getElementById("text");
         sessionControlButtonText.text = "Start Session"
     }
 
@@ -167,8 +203,13 @@ export class RecordView extends View {
         console.log(`[RecordView] Message from Companion: ${evt.data}`)
         switch (evt.data) {
             case "DISCONNECT":
-                console.log("Lost connection, switching to Search...");
-                Application.switchTo('Search');
+                console.log("Lost connection");
+                const sessionMixedText = $('#sessionMixedText');
+                const sessionMixedTextHeader = sessionMixedText.getElementById("header");
+                sessionMixedTextHeader.text = "Lost Connection";
+                sessionMixedTextHeader.style.fill = "fb-red"
+                const sessionMixedTextCopy = sessionMixedText.getElementById("copy");
+                sessionMixedTextCopy.text = "Nyx is not available.";
                 break;
             default:
                 break;
@@ -182,7 +223,7 @@ export class RecordView extends View {
     startSessionButtonHandler = () => {
         if (this.running) {
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-                messaging.peerSocket.send({
+                let data = cbor.encode({
                     command: "STOP_SESSION",
                     data: {
                         sessionIdentifier: this.session.getIdentifier(),
@@ -190,65 +231,49 @@ export class RecordView extends View {
                         readingsCount: this.eventCount
                     }
                 });
+                messaging.peerSocket.send(data);
             }
 
             this.running = false;
 
-            this.hrm.stop();
             this.acc.stop();
+            this.hrm.stop();
             this.batt.stop();
+            this.gyro.stop();
 
             Application.switchToWithState('Summary', this.eventCount);
         } else {
             console.log("[RecordView] Sending START_SESSION...")
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-                messaging.peerSocket.send({
+                let data = cbor.encode({
                     command: "START_SESSION",
                     data: {
                         sessionIdentifier: this.session.getIdentifier(),
                         startTime: Date.now()
                     }
                 });
+                messaging.peerSocket.send(data);
             }
             this.running = true;
 
-            this.hrm.start();
             this.acc.start();
+            this.hrm.start();
             this.batt.start();
+            this.gyro.start();
 
-            let sessionMixedText = $('#sessionMixedText');
-            let sessionMixedTextHeader = sessionMixedText.getElementById("header");
-            let sessionMixedTextCopy = sessionMixedText.getElementById("copy");
+            const sessionMixedText = $('#sessionMixedText');
+            const sessionMixedTextHeader = sessionMixedText.getElementById("header");
+            const sessionMixedTextCopy = sessionMixedText.getElementById("copy");
         
             sessionMixedTextHeader.text = "Recording...";
             sessionMixedTextHeader.style.fill = "fb-red"
             sessionMixedTextCopy.text = "Press the button below to stop recording.";
         
-            let sessionControlButton = $('#sessionControlButton');
+            const sessionControlButton = $('#sessionControlButton');
             sessionControlButton.style.fill = "fb-red"
         
-            let sessionControlButtonText = sessionControlButton.getElementById("text");
+            const sessionControlButtonText = sessionControlButton.getElementById("text");
             sessionControlButtonText.text = "End Session"
-            this.gradientRect.gradient.colors.c1 = "#6D2120";
         }
     }
-
-    currentTimeLabel() {
-        let now = new Date();
-        let hour = now.getHours();
-        let minute = now.getMinutes();
-        return `${(hour.toString()).padStart(2,'0')}:${(minute.toString()).padStart(2,'0')}`;
-    }
-
-    tickHandler() {
-        this.clockLabel.text = this.currentTimeLabel();
-    }
-
-}
-
-String.prototype.padStart = function(length, padString) {
-    var str = this;
-    while (str.length < length)
-        str = padString + str;
-    return str;
 }

@@ -19,10 +19,8 @@ export class Battery {
     }
     
     setFrequency(f) {
-        console.log(`f: ${f}`)
         this.frequency = f;
         this.delay = 1000/f;
-        console.log(`delay: ${this.delay}`)
     }
 
     start() {

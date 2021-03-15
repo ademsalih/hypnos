@@ -1,13 +1,12 @@
 import { Application } from './lib/view';
 import { Main } from './views/main';
-import { Search } from './views/session/search';
 import { RecordView } from './views/session/recordView';
 import { Summary } from './views/session/summary';
 import { Settings } from './views/settings/settings';
 import { ToggleSensor } from './views/settings/sensor/toggleSensor';
 import { SensorSampling } from './views/settings/sampling/sensorSampling';
 import { SamplingTumbler } from './views/settings/sampling/samplingTumbler';
-import { About } from './views/settings/about/about';
+import { memory } from "system";
 
 class MultiScreenApp extends Application {
     /**
@@ -15,16 +14,18 @@ class MultiScreenApp extends Application {
      */
     screens = {
         Main,
-        Search,
         RecordView,
         Summary,
         Settings,
         ToggleSensor,
         SensorSampling,
-        SamplingTumbler,
-        About
+        SamplingTumbler
     }
 }
+
+setInterval(() => {
+    console.log(`MEMORY: ${memory.js.used}/65528  ${Math.round( (memory.js.used/65528)*100*10 ) / 10}%`)
+}, 600);
 
 // Start the application with Main-screen.
 MultiScreenApp.start('Main');

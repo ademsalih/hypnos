@@ -1,4 +1,0 @@
-<svg id="about" display="none">
-    <link rel="stylesheet" href="styles.css" />
-    <textarea id="about-text"></textarea>
-</svg>

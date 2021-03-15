@@ -50,13 +50,11 @@ export class SamplingTumbler extends View {
     }
 
     onKeyUp(){
-
+        this.tumbler.value -= 1;
     }
 
     onKeyDown() {
-
+        this.tumbler.value += 1;
     }
-
-
 
 }
