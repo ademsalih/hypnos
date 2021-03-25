@@ -12,7 +12,6 @@ import { HeartRateReading } from '../../reading/HeartRateReading';
 import { PreferencesManager } from '../../lib/PreferenceManager';
 import Session from '../../sensor/Session';
 
-//import clock from "clock";
 import { outbox } from "file-transfer";
 import * as cbor from "cbor";
 import { me as device } from "device";
@@ -38,9 +37,14 @@ export class RecordView extends View {
         console.log("[RecordView] onMount()");
 
         const prefManager = new PreferencesManager();
-        this.acc.setOptions({ frequency: prefManager.getSensorFrequencyFor("ACCELEROMETER_SENSOR"), batch: 25 });
+
+        const accF = prefManager.getSensorFrequencyFor("ACCELEROMETER_SENSOR");
+        this.acc.setOptions({ frequency: accF, batch: accF });
+
         this.batt.setFrequency(prefManager.getSensorFrequencyFor("BATTERY_SENSOR"));
-        this.gyro.setOptions({ frequency: prefManager.getSensorFrequencyFor("GYROSCOPE_SENSOR"), batch: 25 });
+        
+        const gyroF = prefManager.getSensorFrequencyFor("GYROSCOPE_SENSOR")
+        this.gyro.setOptions({ frequency: gyroF, batch: gyroF });
 
         const sessionControlButton = $('#sessionControlButton');
         sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
@@ -58,7 +62,7 @@ export class RecordView extends View {
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
             let data = cbor.encode({
                 command: "INIT_SESSION",
-                data: {
+                payload: {
                     sessionIdentifier: this.session.getIdentifier(),
                     deviceModel: device.modelName
                 }
@@ -91,7 +95,7 @@ export class RecordView extends View {
 
         let data = cbor.encode({
             command: "ADD_READING",
-            data: new AccelerometerBatchReading(this.session.getIdentifier(), x, y, z, ts).get()
+            payload: new AccelerometerBatchReading(this.session.getIdentifier(), x, y, z, ts).get()
         });
 
         /* outbox.enqueue("accelerometer.json", data)
@@ -122,7 +126,7 @@ export class RecordView extends View {
     heartRateEventHandler() {
         let data = cbor.encode({
             command: "ADD_READING",
-            data: new HeartRateReading(this.session.getIdentifier(), this.hrm.heartRate).get()
+            payload: new HeartRateReading(this.session.getIdentifier(), this.hrm.heartRate).get()
         });
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
@@ -134,7 +138,7 @@ export class RecordView extends View {
     batteryEventHandler() {
         let data = cbor.encode({
             command: "ADD_READING",
-            data: new BatteryReading(this.session.getIdentifier(), this.batt.batteryLevel).get()
+            payload: new BatteryReading(this.session.getIdentifier(), this.batt.batteryLevel).get()
         });
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
@@ -151,7 +155,7 @@ export class RecordView extends View {
 
         let data = cbor.encode({
             command: "ADD_READING",
-            data: new GyroscopeBatchReading(this.session.getIdentifier(), x, y, z, ts).get()
+            payload: new GyroscopeBatchReading(this.session.getIdentifier(), x, y, z, ts).get()
         });
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
@@ -225,7 +229,7 @@ export class RecordView extends View {
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
                 let data = cbor.encode({
                     command: "STOP_SESSION",
-                    data: {
+                    payload: {
                         sessionIdentifier: this.session.getIdentifier(),
                         endTime: Date.now(),
                         readingsCount: this.eventCount
@@ -247,7 +251,7 @@ export class RecordView extends View {
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
                 let data = cbor.encode({
                     command: "START_SESSION",
-                    data: {
+                    payload: {
                         sessionIdentifier: this.session.getIdentifier(),
                         startTime: Date.now()
                     }

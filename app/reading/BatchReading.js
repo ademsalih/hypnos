@@ -1,22 +1,24 @@
 export class BatchReading {
     _sessionIdentifier = '';
-    _timeStamp = '';
+    _timeStamps = [];
     _sensorIdentifier = '';
-    _items = {};
+    _batchReading = true;
+    _data = [];
 
-    constructor(session, sensor, items) {
+    constructor(session, sensor, data, timeStamps) {
         this._sessionIdentifier = session;
         this._sensorIdentifier = sensor;
-        this._timeStamp = Date.now();
-        this._items = items;
+        this._timeStamps = timeStamps;
+        this._data = data;
     }
 
     get() {
         return {
             sessionIdentifier: this._sessionIdentifier,
             sensorIdentifier: this._sensorIdentifier,
-            timeStamp: this._timeStamp,
-            items: this._items
+            batchReading: this._batchReading,
+            timeStamps: this._timeStamps,
+            data: this._data
         }
     }
 

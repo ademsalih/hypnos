@@ -1,0 +1,15 @@
+{
+    "command": "ADD_READING",
+    "payload": {
+        "sensorIdentifier": "BATTERY",
+        "sessionIdentifier": "7749f998-1640-4544-bf2b-0b0162b0ad61",
+        "batchReading": false,
+        "timestamp": 123123213,
+        "data": [
+            {
+                "type": "percentage",
+                "item": 100.0
+            }
+        ]
+    }
+}

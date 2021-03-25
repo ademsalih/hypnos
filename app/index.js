@@ -25,7 +25,7 @@ class MultiScreenApp extends Application {
 
 setInterval(() => {
     console.log(`MEMORY: ${memory.js.used}/65528  ${Math.round( (memory.js.used/65528)*100*10 ) / 10}%`)
-}, 600);
+}, 1000);
 
 // Start the application with Main-screen.
 MultiScreenApp.start('Main');

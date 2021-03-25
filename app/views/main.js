@@ -5,6 +5,7 @@ import * as messaging from "messaging";
 import { PreferencesManager } from '../lib/PreferenceManager';
 import { me as device } from "device";
 import * as cbor from "cbor";
+//import { memory } from "system";
 
 const $ = $at( '#main' );
 var connected = false;

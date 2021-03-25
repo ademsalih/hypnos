@@ -1,0 +1,23 @@
+{
+    "command": "ADD_READING",
+    "payload": {
+        "sensorIdentifier": "ACCELEROMETER",
+        "sessionIdentifier": "7749f998-1640-4544-bf2b-0b0162b0ad61",
+        "batchReading": true,
+        "timestamp": [123123, 123123, 123123],
+        "data": [
+            {
+                "type": "x",
+                "items": [9.23, 1.023, 2.30]
+            },
+            {
+                "type": "y",
+                "items": [0.22, 3.024, 6.40]
+            },
+            {
+                "type": "z",
+                "items": [0.03, 9.4, 3.30]
+            }
+        ]
+    }
+}
