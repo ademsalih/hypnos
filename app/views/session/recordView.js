@@ -64,7 +64,13 @@ export class RecordView extends View {
                 command: "INIT_SESSION",
                 payload: {
                     sessionIdentifier: this.session.getIdentifier(),
-                    deviceModel: device.modelName
+                    deviceModel: device.modelName,
+                    activeSensors: [
+                        "ACCELEROMETER",
+                        "GYROSCOPE",
+                        "HEARTRATE",
+                        "BATTERY"
+                    ]
                 }
             })
             messaging.peerSocket.send(data);
