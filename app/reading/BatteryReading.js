@@ -5,7 +5,7 @@ export class BatteryReading extends Reading {
     constructor(sessionID, batteryPercentage) {
         let data = [
             {
-                type: "percent",
+                type: "PERCENT",
                 item: batteryPercentage
             }
         ];

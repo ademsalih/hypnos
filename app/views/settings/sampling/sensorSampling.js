@@ -1,4 +1,4 @@
-import FileHandler from '../../../lib/FileHandler';
+import FileHandler from '../../../../common/FileHandler';
 import { Application } from '../../../lib/view';
 import { View, $at } from '../../../lib/view'
 

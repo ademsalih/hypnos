@@ -1,4 +1,4 @@
-import FileHandler from "./FileHandler";
+import FileHandler from "../../common/FileHandler";
 import { SENSOR_DEFINITIONS } from '../sensor/sensorDefinitions';
 
 export class PreferencesManager {
@@ -54,7 +54,7 @@ export class PreferencesManager {
     }
 
     setSensorStatus(s, status) {
-
+        
     }
 
     getSensorFrequencyFor(s) {

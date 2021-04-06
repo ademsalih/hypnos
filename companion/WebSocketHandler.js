@@ -13,9 +13,8 @@ export class WebSocketHandler {
     _onMessageHandler;
     _onOpenHandler;
     _onCloseHandler;
-    _instance = {};
     _timeOut;
-    _reconenct = true;
+    _reconnect = true;
 
     constructor(host, port) {
         this._host = host;
@@ -34,32 +33,33 @@ export class WebSocketHandler {
         });
 
         this.websocket.addEventListener("close", (e) => {
-            console.log("[WebSocketHandler] Close");
-            switch(e.code) {
-                case 1000:
-			        console.log("WebSocket: closed");
-			        break;
-		        default:
-                    console.log("default")
-                    this._onCloseHandler();
+            console.log(`[WebSocketHandler] Close, code: ${e.code} ${e.reason}`);
+            this._onCloseHandler();
 
+            switch (e.code) {
+                case 1000:
+                    break;
+                case 1001:
+                    break;
+                default:
                     if (inside) {
                         console.log("inside")
-                        if (this._reconenct) {
+                        if (this._reconnect) {
                             console.log("reconnect")
                             this.reConnect();
                         }
                     } else {
                         console.log("outside")
-                        this._reconenct = true;
+                        this._reconnect = true;
                         this.reConnect();
                     }
-			        break;
-		    }
+                    break;
+            }
+
         });
 
         this.websocket.addEventListener("error", (e) => {
-            console.log("[WebSocketHandler] Error");
+            console.log(`[WebSocketHandler] Error: ${e.data}`);
         });
 
         this.websocket.addEventListener("message", (e) => {
@@ -120,8 +120,14 @@ export class WebSocketHandler {
 
     stop() {
         clearTimeout(this._timeOut);
-        this._reconenct = false;
-        this._instance = null;
+        this._reconnect = false;
+    }
+
+    getBufferedAmount() {
+        return this.websocket.bufferedAmount;
     }
     
+    connectionOpen() {
+        return this.websocket.readyState === WebSocket.OPEN;
+    }
 }

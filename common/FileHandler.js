@@ -39,6 +39,14 @@ export default class FileHandler {
         return fs.readFileSync(filename, "json");
     }
 
+    writeCBORFile(filename, data) {
+        fs.writeFileSync(filename, data, "cbor");
+    }
+
+    readCBORFile(filename) {
+        return fs.readFileSync(filename, "cbor");
+    }
+
     readRawFile(fileName) {
         let file = fs.openSync(fileName, "r")
         let buffer = new ArrayBuffer(this.fileSize(fileName));

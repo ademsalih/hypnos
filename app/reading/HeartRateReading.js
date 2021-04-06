@@ -5,7 +5,7 @@ export class HeartRateReading extends Reading {
     constructor(session, bpmReading) {
         let data = [
             {
-                "type": "bpm",
+                "type": "BPM",
                 "item": bpmReading
             }
         ]
