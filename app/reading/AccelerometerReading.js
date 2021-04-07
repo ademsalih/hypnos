@@ -15,7 +15,7 @@ export class AccelerometerReading extends Reading {
 
     get() {
         return {
-            timestamp: this._timeStamp,
+            timestamp: this._timestamp,
             x: this._x,
             y: this._y,
             z: this._z

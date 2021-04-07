@@ -18,6 +18,8 @@ import { me as device } from "device";
 import * as messaging from "messaging";
 import { BatteryReading } from '../../reading/BatteryReading';
 import { GyroscopeBatchReading } from '../../reading/GyroscopeBatchReading';
+import { Memory } from '../../sensor/sensors/MemorySensor';
+import { MemoryReading } from '../../reading/MemoryReading';
 
 const $ = $at( '#recordView' );
 
@@ -28,26 +30,31 @@ export class RecordView extends View {
     running = false;
     eventCount;
     session;
-    //hrm = new HeartRateSensor();
-    //acc = new Accelerometer();
+    hrm = new HeartRateSensor();
+    acc = new Accelerometer();
     batt = new Battery();
-    //gyro = new Gyroscope();
+    mem = new Memory();
+    gyro = new Gyroscope();
     
     onMount(){
         console.log("[RecordView] onMount()");
 
         const prefManager = new PreferencesManager();
 
-        /* const accF = prefManager.getSensorFrequencyFor("ACCELEROMETER_SENSOR");
-        this.acc.setOptions({ frequency: accF, batch: accF }); */
+        const accF = prefManager.getSensorFrequencyFor("ACCELEROMETER_SENSOR");
+        this.acc.setOptions({ frequency: accF, batch: accF });
 
-        //this.hrm.setOptions({ frequency: 1, batch: 1 })
+        const hrmF = prefManager.getSensorFrequencyFor("HEARTRATE_SENSOR");
+        this.hrm.setOptions({ frequency: hrmF })
 
         const battF = prefManager.getSensorFrequencyFor("BATTERY_SENSOR");
-        this.batt.setOptions({ frequency: 20, batch: 100 })
+        this.batt.setOptions({ frequency: battF })
+
+        const memF = prefManager.getSensorFrequencyFor("MEMORY_SENSOR");
+        this.mem.setOptions({ frequency: memF })
         
-        /* const gyroF = prefManager.getSensorFrequencyFor("GYROSCOPE_SENSOR")
-        this.gyro.setOptions({ frequency: gyroF, batch: gyroF }); */
+        const gyroF = prefManager.getSensorFrequencyFor("GYROSCOPE_SENSOR")
+        this.gyro.setOptions({ frequency: gyroF, batch: gyroF });
 
         const sessionControlButton = $('#sessionControlButton');
         sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
@@ -57,10 +64,11 @@ export class RecordView extends View {
         this.eventCount = 0;
         this.session = new Session();
 
-        //this.hrm.onreading = this.heartRateEventHandler.bind(this);
-        //this.acc.onreading = this.accelerometerEventHandler.bind(this);
+        this.hrm.onreading = this.heartRateEventHandler.bind(this);
+        this.acc.onreading = this.accelerometerEventHandler.bind(this);
         this.batt.onreading = this.batteryEventHandler.bind(this);
-        //this.gyro.onreading = this.gyroscopeEventHandler.bind(this);
+        this.gyro.onreading = this.gyroscopeEventHandler.bind(this);
+        this.mem.onreading = this.memoryEventHandler.bind(this);
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
             let data = cbor.encode({
@@ -71,19 +79,23 @@ export class RecordView extends View {
                     activeSensors: [
                         {
                             "name": "ACCELEROMETER",
-                            "frequency": 25
+                            "frequency": accF
                         },
                         {
                             "name": "GYROSCOPE",
-                            "frequency": 25
+                            "frequency": gyroF
                         },
                         {
                             "name": "HEARTRATE",
-                            "frequency": 1
+                            "frequency": hrmF
                         },
                         {
                             "name": "BATTERY",
-                            "frequency": 1
+                            "frequency": battF
+                        },
+                        {
+                            "name": "MEMORY",
+                            "frequency": memF
                         }
                     ]
                 }
@@ -92,9 +104,7 @@ export class RecordView extends View {
         }
     }
 
-    /* accelerometerEventHandler() {
-        console.log(this.acc.x)
-        console.log(this.acc.readings.x)
+    accelerometerEventHandler() {
         let now = Date.now();
         let x = Array.prototype.slice.call(this.acc.readings.x);
         let y = Array.prototype.slice.call(this.acc.readings.y);
@@ -124,29 +134,12 @@ export class RecordView extends View {
             data = null;
             this.eventCount += 25;
         }
-    } */
+    }
 
-    /* heartRateEventHandler() {
-        console.log(this.hrm.heartRate)
-        console.log(this.hrm.readings.heartRate)
+    heartRateEventHandler() {
         let data = cbor.encode({
             command: "ADD_READING",
-            payload: new HeartRateReading(this.session.getIdentifier(), this.hrm.heartRate).get()
-        });
-
-        if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-            messaging.peerSocket.send(data);
-            this.eventCount += 1;
-        }
-    } */
-
-    batteryEventHandler() {
-        console.log(this.batt.pct)
-        console.log(this.batt.readings.pct)
-
-        let data = cbor.encode({
-            command: "ADD_READING",
-            payload: new BatteryReading(this.session.getIdentifier(), this.batt.pct).get()
+            payload: new HeartRateReading(this.session.getIdentifier(), this.hrm.heartRate, Date.now()).get()
         });
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
@@ -155,7 +148,31 @@ export class RecordView extends View {
         }
     }
 
-    /* gyroscopeEventHandler() {
+    memoryEventHandler() {
+        let data = cbor.encode({
+            command: "ADD_READING",
+            payload: new MemoryReading(this.session.getIdentifier(), this.mem.val, this.mem.timestamp).get()
+        });
+
+        if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+            messaging.peerSocket.send(data);
+            this.eventCount += 1;
+        }
+    }
+
+    batteryEventHandler() {
+        let data = cbor.encode({
+            command: "ADD_READING",
+            payload: new BatteryReading(this.session.getIdentifier(), this.batt.val, this.batt.timestamp).get()
+        });
+
+        if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+            messaging.peerSocket.send(data);
+            this.eventCount += 1;
+        }
+    }
+
+    gyroscopeEventHandler() {
         let now = Date.now();
         let x = Array.prototype.slice.call(this.gyro.readings.x);
         let y = Array.prototype.slice.call(this.gyro.readings.y);
@@ -180,14 +197,15 @@ export class RecordView extends View {
             messaging.peerSocket.send(data);
             this.eventCount += 25;
         }
-    } */
+    }
 
     onUnmount(){
         console.log("[RecordView] onUnmount()")
-        //this.acc.onreading = null;
-        //this.hrm.onreading = null;
+        this.acc.onreading = null;
+        this.hrm.onreading = null;
         this.batt.onreading = null;
-        //this.gyro.onreading = null;
+        this.mem.onreading = null;
+        this.gyro.onreading = null;
 
         messaging.peerSocket.removeEventListener("message", this.onMessageHandler);
 
@@ -259,10 +277,11 @@ export class RecordView extends View {
 
             this.running = false;
 
-            //this.acc.stop();
-            //this.hrm.stop();
+            this.acc.stop();
+            this.hrm.stop();
             this.batt.stop();
-            //this.gyro.stop();
+            this.mem.stop();
+            this.gyro.stop();
 
             Application.switchToWithState('Summary', this.eventCount);
         } else {
@@ -279,10 +298,11 @@ export class RecordView extends View {
             }
             this.running = true;
 
-            //this.acc.start();
-            //this.hrm.start();
+            this.acc.start();
+            this.hrm.start();
             this.batt.start();
-            //this.gyro.start();
+            this.mem.start();
+            this.gyro.start();
 
             const sessionMixedText = $('#sessionMixedText');
             const sessionMixedTextHeader = sessionMixedText.getElementById("header");

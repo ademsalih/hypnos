@@ -20,8 +20,8 @@ export const SENSOR_DEFINITIONS = [
         "maxFrequency": 100
     },
     {
-        "sensor": "BAROMETER_SENSOR",
-        "displayName": "Barometer",
+        "sensor": "MEMORY_SENSOR",
+        "displayName": "Memory",
         "maxFrequency": 100
     }
 ]

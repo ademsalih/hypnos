@@ -1,5 +1,5 @@
 import FileHandler from "../../common/FileHandler";
-import { SENSOR_DEFINITIONS } from '../sensor/sensorDefinitions';
+import { SENSOR_DEFINITIONS } from '../sensor/SensorDefinitions';
 
 export class PreferencesManager {
 

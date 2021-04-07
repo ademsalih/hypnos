@@ -1,14 +1,14 @@
 export class Reading {
     _sessionIdentifier = '';
-    _timeStamp = '';
+    _timestamp = '';
     _batchReading = false;
     _sensorIdentifier = '';
     _data = {};
 
-    constructor(session, sensor, data, batchReading) {
+    constructor(session, sensor, data, batchReading, timestamp) {
         this._sessionIdentifier = session;
         this._sensorIdentifier = sensor;
-        this._timeStamp = Date.now();
+        this._timestamp = timestamp;
         this._batchReading = batchReading;
         this._data = data;
     }
@@ -17,7 +17,7 @@ export class Reading {
         return {
             sessionIdentifier: this._sessionIdentifier,
             sensorIdentifier: this._sensorIdentifier,
-            timeStamp: this._timeStamp,
+            timestamp: this._timestamp,
             batchReading: this._batchReading,
             data: this._data
         }

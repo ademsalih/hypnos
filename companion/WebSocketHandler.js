@@ -39,8 +39,6 @@ export class WebSocketHandler {
             switch (e.code) {
                 case 1000:
                     break;
-                case 1001:
-                    break;
                 default:
                     if (inside) {
                         console.log("inside")

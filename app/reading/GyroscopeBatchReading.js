@@ -2,7 +2,7 @@ import { BatchReading } from "./BatchReading";
 
 export class GyroscopeBatchReading extends BatchReading {
 
-    constructor(sessionID, x_readings, y_readings, z_readings, timeStamp, timestamps) {
+    constructor(sessionID, x_readings, y_readings, z_readings, timestamp, timestamps) {
         let items = [
             {
                 type: "X",
@@ -17,7 +17,7 @@ export class GyroscopeBatchReading extends BatchReading {
                 items: z_readings
             }
         ]
-        super(sessionID, "GYROSCOPE", items, timeStamp, timestamps);
+        super(sessionID, "GYROSCOPE", items, timestamp, timestamps);
     }
 
     get() {
