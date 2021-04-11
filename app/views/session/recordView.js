@@ -239,11 +239,15 @@ export class RecordView extends View {
         console.log(`[RecordView] Message from Companion: ${evt.data}`)
         switch (evt.data) {
             case "DISCONNECT":
-                console.log("Buffering...");
-                const sessionMixedText = $('#sessionMixedText');
-                const sessionMixedTextHeader = sessionMixedText.getElementById("header");
-                sessionMixedTextHeader.text = "Buffering...";
-                sessionMixedTextHeader.style.fill = "fb-red"
+                if (this.running) {
+                    console.log("Buffering...");
+                    const sessionMixedText = $('#sessionMixedText');
+                    const sessionMixedTextHeader = sessionMixedText.getElementById("header");
+                    sessionMixedTextHeader.text = "Buffering...";
+                    sessionMixedTextHeader.style.fill = "fb-red"
+                } else {
+                    Application.switchTo('Main');
+                }
                 break;
             case "CONNECT":
                 console.log("Recording...");
