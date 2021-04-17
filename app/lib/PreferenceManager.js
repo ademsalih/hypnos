@@ -13,6 +13,13 @@ export class PreferencesManager {
         return this.fHandler.readJSONFile("preferences.json");
     }
 
+    getSensors() {
+        if (this.fHandler.fileExists("preferences.json")) {
+            return this.getPreferenceObject().sensorList;
+        }
+        return [];
+    }
+
     createPreferences() {
         this.fHandler.writeJSONFile("preferences.json", { sensorList: []});
         let readSensorList = this.getPreferenceObject().sensorList;
@@ -34,7 +41,7 @@ export class PreferencesManager {
             }
         });
 
-        this.fHandler.writeJSONFile("preferences.json", { sensorList: readSensorList});
+        this.fHandler.writeJSONFile("preferences.json", { sensorList: readSensorList });
     }
 
     createPreferencesIfNotExists() {
@@ -53,23 +60,39 @@ export class PreferencesManager {
         return sensor.enabled;
     }
 
-    setSensorStatus(s, status) {
-        
+    setSensorStatus(sensor, status) {
+        const sensorList = this.getSensors();
+        const index = sensorList.map(e => e.sensor).indexOf(sensor);
+
+        sensorList[index].enabled = status;
+
+        this.fHandler.writeJSONFile("preferences.json", { sensorList: sensorList });
     }
 
     getSensorFrequencyFor(s) {
         const sensor = this.getSensor(s);
-        const frequency = sensor.sampling.rate;
+        let frequency = sensor.sampling.rate;
         
         if (frequency < 1) {
-            return parseFloat(frequency, 10);
+            frequency = parseFloat(frequency, 10);
         } else {
-            return parseInt(frequency, 10);
+            frequency = parseInt(frequency, 10);
+        }
+
+        return {
+            frequency: frequency,
+            element: sensor.sampling.element
         }
     }
 
-    setSensorFrequencyFor(s) {
+    setSensorFrequencyFor(sensor, selectedIndex, selectedValue) {
+        const sensorList = this.getSensors();
+        const index = sensorList.map(e => e.sensor).indexOf(sensor);
 
+        sensorList[index].sampling.element = selectedIndex;
+        sensorList[index].sampling.rate = selectedValue;
+
+        this.fHandler.writeJSONFile("preferences.json", { sensorList: sensorList });
     }
 
 }

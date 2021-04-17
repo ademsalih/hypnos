@@ -1,55 +1,39 @@
 import { Application } from '../lib/view';
 import { View, $at } from '../lib/view'
-import { me } from "appbit";
-import * as messaging from "messaging";
-import { PreferencesManager } from '../lib/PreferenceManager';
-import { me as device } from "device";
-import * as cbor from "cbor";
-//import { memory } from "system";
 
 const $ = $at( '#main' );
-var connected = false;
 
 export class Main extends View {
     el = $();
 
-    onMount(){
-        console.log("[Main] onMount()");
-        me.appTimeoutEnabled = false;
+    connected = false;
 
-        const pm = new PreferencesManager();
-        pm.createPreferencesIfNotExists();
+    onMount(props){
+        console.log("[Main] onMount()");
+        
+        if (props) this.connected = props.connected;
         
         const newSessionButton = $( '#newSessionButton' );
         newSessionButton.addEventListener("click", this.sessionButtonClickHandler);
 
         const settingsButton = $( '#settingsButton' );
         settingsButton.addEventListener("click", this.settingsButtonClickHandler);
+    }
 
-        messaging.peerSocket.addEventListener("open", (evt) => {
-            if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-                console.log("[Search] Looking for phone");
-                let data = cbor.encode({
-                    command: "SEARCH",
-                    data: {
-                        modelName: device.modelName
-                    }
-                });
-                messaging.peerSocket.send(data);
-            }
-        });
-
-        messaging.peerSocket.addEventListener("message", this.handler);
+    onPropChange(props) {
+        this.connected = props.connected;
+        this.render();
     }
 
     onRender(){
         console.log("[Main] onRender()")
-        const spinner = $( '#spinner' );
+
         const newSessionButton = $( '#newSessionButton' );
         const mixedtext = $( '#mixedtext' );
         const statusText = mixedtext.getElementById('copy');
-
-        if (connected) {
+        const spinner = $( '#spinner' );
+    
+        if (this.connected) {
             spinner.state = "disabled";
             spinner.style.display = "none";
             newSessionButton.style.display = "inline";
@@ -63,44 +47,22 @@ export class Main extends View {
     }
 
     onUnmount(){
+        console.log("[Main] onUnmount()")
+
         const newSessionButton = $( '#newSessionButton' );
-        newSessionButton.removeEventListener("click", this.sessionButtonClickHandler);
+        newSessionButton.removeEventListener("click", this.sessionButtonClickHandler);        
         
         const settingsButton = $( '#settingsButton' );
         settingsButton.removeEventListener("click", this.settingsButtonClickHandler);
-
-        messaging.peerSocket.removeEventListener("message", this.handler);
     }
 
-    handler = (evt) => {
-        console.log(`[Main] Message from Companion: ${evt.data}`)
-        let message = evt.data;
-        
-        switch (message) {
-            case "CONNECT":
-                if (!connected) {
-                    connected = true;
-                    this.render();
-                }
-                break;
-            case "DISCONNECT":
-                if (connected) {
-                    connected = false;
-                    this.render()
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
-    sessionButtonClickHandler() {
-        if (connected) {
+    sessionButtonClickHandler = () => {
+        if (this.connected) {
             Application.switchTo('RecordView');
         }
     }
 
-    settingsButtonClickHandler() {
+    settingsButtonClickHandler = () => {
         Application.switchTo('Settings');
     }
 

@@ -1,26 +1,26 @@
 export const SENSOR_DEFINITIONS = [
     {
-        "sensor": "ACCELEROMETER_SENSOR",
+        "sensor": "ACCELEROMETER",
         "displayName": "Accelerometer",
         "maxFrequency": 100
     },
     {
-        "sensor": "HEARTRATE_SENSOR",
+        "sensor": "HEARTRATE",
         "displayName": "Heart Rate",
         "maxFrequency": 1
     },
     {
-        "sensor": "BATTERY_SENSOR",
+        "sensor": "BATTERY",
         "displayName": "Battery",
         "maxFrequency": 100
     },
     {
-        "sensor": "GYROSCOPE_SENSOR",
+        "sensor": "GYROSCOPE",
         "displayName": "Gyroscope",
         "maxFrequency": 100
     },
     {
-        "sensor": "MEMORY_SENSOR",
+        "sensor": "MEMORY",
         "displayName": "Memory",
         "maxFrequency": 100
     }

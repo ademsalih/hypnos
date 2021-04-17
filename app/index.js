@@ -6,7 +6,14 @@ import { Settings } from './views/settings/settings';
 import { ToggleSensor } from './views/settings/sensor/toggleSensor';
 import { SensorSampling } from './views/settings/sampling/sensorSampling';
 import { SamplingTumbler } from './views/settings/sampling/samplingTumbler';
+
 import { memory } from "system";
+import * as messaging from "messaging";
+import * as cbor from "cbor";
+import { me as device } from "device";
+import { me } from "appbit";
+import { PreferencesManager } from './lib/PreferenceManager';
+
 
 class MultiScreenApp extends Application {
     /**
@@ -21,6 +28,49 @@ class MultiScreenApp extends Application {
         SensorSampling,
         SamplingTumbler
     }
+
+    props = {
+        connected: false
+    }
+
+    init() {
+        me.appTimeoutEnabled = false;
+
+        const pm = new PreferencesManager();
+        pm.createPreferencesIfNotExists();
+        pm = null;
+
+        messaging.peerSocket.addEventListener("open", (evt) => {
+            if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+                let data = cbor.encode({
+                    command: "SEARCH",
+                    data: {
+                        modelName: device.modelName
+                    }
+                });
+                messaging.peerSocket.send(data);
+            }
+        });
+
+        messaging.peerSocket.addEventListener("message", (evt) => {
+            console.log(`[Main] Message from Companion: ${evt.data}`)
+            let message = evt.data;
+            
+            switch (message) {
+                case "CONNECT":
+                    this.props.connected = true;
+                    break;
+                case "DISCONNECT":
+                    this.props.connected = false;
+                    break;
+                default:
+                    break;
+            }
+
+            this.onPropChange(this.props);
+        });
+    }
+
 }
 
 /* setInterval(() => {

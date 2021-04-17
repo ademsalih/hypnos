@@ -1,4 +1,5 @@
 import FileHandler from '../../../../common/FileHandler';
+import { PreferencesManager } from '../../../lib/PreferenceManager';
 import { Application } from '../../../lib/view';
 import { View, $at } from '../../../lib/view'
 
@@ -11,11 +12,11 @@ export class SensorSampling extends View {
     onMount(){
         console.log("[Settings > Sampling] onMount()")
 
-        let fileHandler = new FileHandler();
-        let preferences = fileHandler.readJSONFile("preferences.json");
-        let sensorList = preferences.sensorList
+        const pm = new PreferencesManager();
+
+        let sensorList = pm.getSensors();
     
-        let virtualList = $('#settings-sampling-list');
+        const virtualList = $('#settings-sampling-list');
         let elementCount = sensorList.length
     
         virtualList.delegate = {
@@ -35,7 +36,7 @@ export class SensorSampling extends View {
                 let touch = tile.getElementById("touch-me");
                 touch.onclick = evt => {
                     Application.switchToWithState('SamplingTumbler', {
-                        sensor: sensorList[info.index].displayName
+                        sensor: sensorList[info.index].sensor
                     });
                 };
             }

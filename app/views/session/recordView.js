@@ -28,6 +28,8 @@ export class RecordView extends View {
     el = $();
 
     running = false;
+    connected = false;
+
     eventCount;
     session;
     hrm = new HeartRateSensor();
@@ -36,30 +38,29 @@ export class RecordView extends View {
     mem = new Memory();
     gyro = new Gyroscope();
     
-    onMount(){
+    onMount(props){
         console.log("[RecordView] onMount()");
+        if (props) this.connected = props.connected;
 
         const prefManager = new PreferencesManager();
 
-        const accF = prefManager.getSensorFrequencyFor("ACCELEROMETER_SENSOR");
-        this.acc.setOptions({ frequency: accF, batch: accF });
+        const accF = prefManager.getSensorFrequencyFor("ACCELEROMETER");
+        this.acc.setOptions({ frequency: accF.frequency, batch: accF.frequency });
 
-        const hrmF = prefManager.getSensorFrequencyFor("HEARTRATE_SENSOR");
-        this.hrm.setOptions({ frequency: hrmF })
+        const hrmF = prefManager.getSensorFrequencyFor("HEARTRATE");
+        this.hrm.setOptions({ frequency: hrmF.frequency })
 
-        const battF = prefManager.getSensorFrequencyFor("BATTERY_SENSOR");
-        this.batt.setOptions({ frequency: battF })
+        const battF = prefManager.getSensorFrequencyFor("BATTERY");
+        this.batt.setOptions({ frequency: battF.frequency })
 
-        const memF = prefManager.getSensorFrequencyFor("MEMORY_SENSOR");
-        this.mem.setOptions({ frequency: memF })
+        const memF = prefManager.getSensorFrequencyFor("MEMORY");
+        this.mem.setOptions({ frequency: memF.frequency })
         
-        const gyroF = prefManager.getSensorFrequencyFor("GYROSCOPE_SENSOR")
-        this.gyro.setOptions({ frequency: gyroF, batch: gyroF });
+        const gyroF = prefManager.getSensorFrequencyFor("GYROSCOPE")
+        this.gyro.setOptions({ frequency: gyroF.frequency, batch: gyroF.frequency });
 
         const sessionControlButton = $('#sessionControlButton');
         sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
-
-        messaging.peerSocket.addEventListener("message", this.onMessageHandler);
 
         this.eventCount = 0;
         this.session = new Session();
@@ -207,8 +208,6 @@ export class RecordView extends View {
         this.mem.onreading = null;
         this.gyro.onreading = null;
 
-        messaging.peerSocket.removeEventListener("message", this.onMessageHandler);
-
         const sessionMixedText = $('#sessionMixedText');
         const sessionMixedTextHeader = sessionMixedText.getElementById("header");
         sessionMixedTextHeader.text = "New Session";
@@ -234,30 +233,37 @@ export class RecordView extends View {
             // Change text to "End session before exit""
         }
     }
-    
-    onMessageHandler = (evt) => {
-        console.log(`[RecordView] Message from Companion: ${evt.data}`)
-        switch (evt.data) {
-            case "DISCONNECT":
-                if (this.running) {
-                    console.log("Buffering...");
-                    const sessionMixedText = $('#sessionMixedText');
-                    const sessionMixedTextHeader = sessionMixedText.getElementById("header");
-                    sessionMixedTextHeader.text = "Buffering...";
-                    sessionMixedTextHeader.style.fill = "fb-red"
-                } else {
-                    Application.switchTo('Main');
-                }
-                break;
-            case "CONNECT":
-                console.log("Recording...");
-                const sessionMixedText = $('#sessionMixedText');
-                const sessionMixedTextHeader = sessionMixedText.getElementById("header");
+
+    onPropChange(props) {
+        this.connected = props.connected;
+
+        if (!this.connected && !this.running) {
+            Application.switchTo('Main');
+        } else {
+            this.render();
+        }
+    }
+
+    onRender() {
+        if (this.running) {
+            const sessionMixedText = $('#sessionMixedText');
+            const sessionMixedTextHeader = sessionMixedText.getElementById("header");
+            if (this.connected) {
                 sessionMixedTextHeader.text = "Recording...";
                 sessionMixedTextHeader.style.fill = "fb-red"
-                break;
-            default:
-                break;
+                
+                const sessionMixedTextCopy = sessionMixedText.getElementById("copy");
+                sessionMixedTextCopy.text = "Press the button below to stop recording.";
+
+                const sessionControlButton = $('#sessionControlButton');
+                sessionControlButton.style.fill = "fb-red"
+            
+                const sessionControlButtonText = sessionControlButton.getElementById("text");
+                sessionControlButtonText.text = "End Session"
+            } else {
+                sessionMixedTextHeader.text = "Buffering...";
+                sessionMixedTextHeader.style.fill = "fb-red"
+            }
         }
     }
 
@@ -279,14 +285,13 @@ export class RecordView extends View {
                 messaging.peerSocket.send(data);
             }
 
-            this.running = false;
-
             this.acc.stop();
             this.hrm.stop();
             this.batt.stop();
             this.mem.stop();
             this.gyro.stop();
 
+            this.running = false;
             Application.switchToWithState('Summary', this.eventCount);
         } else {
             console.log("[RecordView] Sending START_SESSION...")
@@ -300,28 +305,16 @@ export class RecordView extends View {
                 });
                 messaging.peerSocket.send(data);
             }
-            this.running = true;
-
+            
             this.acc.start();
             this.hrm.start();
             this.batt.start();
             this.mem.start();
             this.gyro.start();
 
-            const sessionMixedText = $('#sessionMixedText');
-            const sessionMixedTextHeader = sessionMixedText.getElementById("header");
-            const sessionMixedTextCopy = sessionMixedText.getElementById("copy");
-        
-            sessionMixedTextHeader.text = "Recording...";
-            sessionMixedTextHeader.style.fill = "fb-red"
-            sessionMixedTextCopy.text = "Press the button below to stop recording.";
-        
-            const sessionControlButton = $('#sessionControlButton');
-            sessionControlButton.style.fill = "fb-red"
-        
-            const sessionControlButtonText = sessionControlButton.getElementById("text");
-            sessionControlButtonText.text = "End Session"
+            this.running = true;
         }
+        this.render();
     }
 
 }

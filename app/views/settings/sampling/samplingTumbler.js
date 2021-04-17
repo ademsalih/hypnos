@@ -1,39 +1,43 @@
 import { Application } from '../../../lib/view';
 import { View, $at } from '../../../lib/view'
 import FileHandler from '../../../../common/FileHandler';
+import { PreferencesManager } from '../../../lib/PreferenceManager';
 
 const $ = $at( '#samplingTumbler' );
 
 export class SamplingTumbler extends View {
 
     el = $();
-    tumbler = $('#tumbler');
     fileHandler = new FileHandler();
+
+    prefManager;
+    tumbler;
+    sensorList;
+    sensor;
 
     onMount(state){
         console.log("[Settings > Sampling > Sampling Rate] onMount()")
         console.log(state.sensor);
+        this.sensor = state.sensor;
 
-        let preferences = this.fileHandler.readJSONFile("preferences.json");
-        let sensorList = preferences.sensorList
+        this.prefManager = new PreferencesManager();
+        const freq = this.prefManager.getSensorFrequencyFor(state.sensor);
 
-        const index = sensorList.map(e => e.displayName).indexOf(state.sensor);
-
-        this.tumbler.value = sensorList[index].sampling.element;
+        this.tumbler = $('#tumbler');
+        this.tumbler.value = freq.element;
         
-        this.tumbler.addEventListener("select", () => {
-            console.log("selectChanged")
-            let selectedIndex = this.tumbler.value;
-            let selectedItem = this.tumbler.getElementById("item" + selectedIndex);
-            let selectedValue = selectedItem.getElementById("content").text;
+        this.tumbler.addEventListener("select", this.selectHandler);
+    }
 
-            const index = sensorList.map(e => e.displayName).indexOf(state.sensor);
+    selectHandler = () => {
+        console.log("selectChanged")
+        let selectedIndex = this.tumbler.value;
+        let selectedItem = this.tumbler.getElementById("item" + selectedIndex);
+        let selectedValue = selectedItem.getElementById("content").text;
 
-            sensorList[index].sampling.element = selectedIndex;
-            sensorList[index].sampling.rate = selectedValue;
+        console.log(`changed to index=${selectedIndex} and value=${selectedValue}`)
 
-            this.fileHandler.writeJSONFile("preferences.json", preferences)
-        });
+        this.prefManager.setSensorFrequencyFor(this.sensor, selectedIndex, selectedValue);
     }
 
     onRender(){
@@ -42,19 +46,14 @@ export class SamplingTumbler extends View {
 
     onUnmount(){
         console.log("[Settings > Sampling > Sampling Rate] onUnmount()")
+        //this.tumbler.removeEventListener("select", this.selectHandler);
+
+        this.tumbler.removeEventListener("select", this.selectHandler);
     }
 
     onKeyBack(e) {
         e.preventDefault();
         Application.switchTo('SensorSampling');
-    }
-
-    onKeyUp(){
-        this.tumbler.value -= 1;
-    }
-
-    onKeyDown() {
-        this.tumbler.value += 1;
     }
 
 }

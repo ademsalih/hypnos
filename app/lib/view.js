@@ -114,6 +114,7 @@ export class View {
 
 const ViewProto = View.prototype;
 ViewProto.onKeyBack = ViewProto.onKeyDown = ViewProto.onKeyUp = ViewProto.onMount = ViewProto.onUnmount = ViewProto.onRender = function () { };
+ViewProto.onPropChange = function () { };
 
 export class Application extends View {
     setScreen(s) {
@@ -128,7 +129,7 @@ export class Application extends View {
     // Switch the screen
     static switchTo(screenName) {
         const { instance } = Application;
-        instance.setScreen(new instance.screens[screenName]());
+        instance.setScreen(new instance.screens[screenName](instance.props));
     }
 
     // Switch the screen and pass a state
@@ -140,6 +141,8 @@ export class Application extends View {
     static start(screen) {
         // Instantiate and mount an application.
         const app = (Application.instance = new this());
+        app.init();
+
         Application.switchTo(screen);
         mount(app);
 
@@ -153,6 +156,10 @@ export class Application extends View {
             else if (evt.key === "down") app.onKeyDown(evt);
             else if (evt.key === "up") app.onKeyUp(evt);
         };
+    }
+    
+    onPropChange(props) {
+        this.screen.onPropChange(props);
     }
 
     onKeyBack(evt) {

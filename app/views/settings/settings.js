@@ -15,11 +15,15 @@ export class Settings extends View {
     
         items.forEach((element, index) => {
             let touch = element.getElementById('settings-touch');
-            touch.onclick = (evt) => {
-                if (index == 0) {
-                    Application.switchTo('ToggleSensor');
-                } else if (index == 1) {
-                    Application.switchTo('SensorSampling');
+            touch.onclick = () => {
+                switch(index) {
+                    case 0:
+                        Application.switchTo('ToggleSensor');
+                        break;
+                    case 1:
+                        Application.switchTo('SensorSampling');
+                        break;
+                    default:
                 }
             }
         });
