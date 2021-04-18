@@ -1,4 +1,4 @@
-import FileHandler from '../../common/FileHandler';
+import FileHandler from "./FileHandler";
 
 export class BufferHandler {
 

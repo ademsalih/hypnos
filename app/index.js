@@ -12,13 +12,11 @@ import * as messaging from "messaging";
 import * as cbor from "cbor";
 import { me as device } from "device";
 import { me } from "appbit";
-import { PreferencesManager } from './lib/PreferenceManager';
+import PreferencesManager from './lib/PreferenceManager';
 
 
 class MultiScreenApp extends Application {
-    /**
-     * All screens of the application should be listed here.
-     */
+
     screens = {
         Main,
         RecordView,
@@ -53,10 +51,7 @@ class MultiScreenApp extends Application {
         });
 
         messaging.peerSocket.addEventListener("message", (evt) => {
-            console.log(`[Main] Message from Companion: ${evt.data}`)
-            let message = evt.data;
-            
-            switch (message) {
+            switch (evt.data) {
                 case "CONNECT":
                     this.props.connected = true;
                     break;
@@ -66,16 +61,15 @@ class MultiScreenApp extends Application {
                 default:
                     break;
             }
-
             this.onPropChange(this.props);
         });
     }
 
 }
 
-/* setInterval(() => {
+setInterval(() => {
     console.log(`MEMORY: ${memory.js.used}/65528  ${Math.round( (memory.js.used/65528)*100*10 ) / 10}%`)
-}, 1000); */
+}, 1000);
 
 // Start the application with Main-screen.
 MultiScreenApp.start('Main');

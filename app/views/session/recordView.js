@@ -1,5 +1,6 @@
 import { Application } from '../../lib/view';
-import { View, $at } from '../../lib/view'
+import { View, $at } from '../../lib/view';
+import { getUUID } from '../../lib/uuid';
 
 import { Accelerometer } from "accelerometer";
 import { HeartRateSensor } from "heart-rate";
@@ -9,10 +10,8 @@ import { Gyroscope } from "gyroscope";
 import { AccelerometerBatchReading } from '../../reading/AccelerometerBatchReading';
 import { HeartRateReading } from '../../reading/HeartRateReading';
 
-import { PreferencesManager } from '../../lib/PreferenceManager';
-import Session from '../../sensor/Session';
+import PreferencesManager from '../../lib/PreferenceManager';
 
-import { outbox } from "file-transfer";
 import * as cbor from "cbor";
 import { me as device } from "device";
 import * as messaging from "messaging";
@@ -31,7 +30,7 @@ export class RecordView extends View {
     connected = false;
 
     eventCount;
-    session;
+    sessionUUID;
     hrm = new HeartRateSensor();
     acc = new Accelerometer();
     batt = new Battery();
@@ -63,7 +62,7 @@ export class RecordView extends View {
         sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
 
         this.eventCount = 0;
-        this.session = new Session();
+        this.sessionUUID = getUUID();
 
         this.hrm.onreading = this.heartRateEventHandler.bind(this);
         this.acc.onreading = this.accelerometerEventHandler.bind(this);
@@ -75,28 +74,28 @@ export class RecordView extends View {
             let data = cbor.encode({
                 command: "INIT_SESSION",
                 payload: {
-                    sessionIdentifier: this.session.getIdentifier(),
+                    sessionIdentifier: this.sessionUUID,
                     deviceModel: device.modelName,
                     activeSensors: [
                         {
                             "name": "ACCELEROMETER",
-                            "frequency": accF
+                            "frequency": accF.frequency
                         },
                         {
                             "name": "GYROSCOPE",
-                            "frequency": gyroF
+                            "frequency": gyroF.frequency
                         },
                         {
                             "name": "HEARTRATE",
-                            "frequency": hrmF
+                            "frequency": hrmF.frequency
                         },
                         {
                             "name": "BATTERY",
-                            "frequency": battF
+                            "frequency": battF.frequency
                         },
                         {
                             "name": "MEMORY",
-                            "frequency": memF
+                            "frequency": memF.frequency
                         }
                     ]
                 }
@@ -123,7 +122,7 @@ export class RecordView extends View {
 
         let data = cbor.encode({
             command: "ADD_READING",
-            payload: new AccelerometerBatchReading(this.session.getIdentifier(), x, y, z, now, ts).get()
+            payload: new AccelerometerBatchReading(this.sessionUUID, x, y, z, now, ts).get()
         });
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
@@ -140,7 +139,7 @@ export class RecordView extends View {
     heartRateEventHandler() {
         let data = cbor.encode({
             command: "ADD_READING",
-            payload: new HeartRateReading(this.session.getIdentifier(), this.hrm.heartRate, Date.now()).get()
+            payload: new HeartRateReading(this.sessionUUID, this.hrm.heartRate, Date.now()).get()
         });
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
@@ -152,7 +151,7 @@ export class RecordView extends View {
     memoryEventHandler() {
         let data = cbor.encode({
             command: "ADD_READING",
-            payload: new MemoryReading(this.session.getIdentifier(), this.mem.val, this.mem.timestamp).get()
+            payload: new MemoryReading(this.sessionUUID, this.mem.val, this.mem.timestamp).get()
         });
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
@@ -164,7 +163,7 @@ export class RecordView extends View {
     batteryEventHandler() {
         let data = cbor.encode({
             command: "ADD_READING",
-            payload: new BatteryReading(this.session.getIdentifier(), this.batt.val, this.batt.timestamp).get()
+            payload: new BatteryReading(this.sessionUUID, this.batt.val, this.batt.timestamp).get()
         });
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
@@ -191,7 +190,7 @@ export class RecordView extends View {
 
         let data = cbor.encode({
             command: "ADD_READING",
-            payload: new GyroscopeBatchReading(this.session.getIdentifier(), x, y, z, now, ts).get()
+            payload: new GyroscopeBatchReading(this.sessionUUID, x, y, z, now, ts).get()
         });
 
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
@@ -226,17 +225,13 @@ export class RecordView extends View {
 
     onKeyBack(e) {
         e.preventDefault();
-
         if (!this.running) {
             Application.switchTo('Main');
-        } else {
-            // Change text to "End session before exit""
         }
     }
 
     onPropChange(props) {
         this.connected = props.connected;
-
         if (!this.connected && !this.running) {
             Application.switchTo('Main');
         } else {
@@ -277,7 +272,7 @@ export class RecordView extends View {
                 let data = cbor.encode({
                     command: "STOP_SESSION",
                     payload: {
-                        sessionIdentifier: this.session.getIdentifier(),
+                        sessionIdentifier: this.sessionUUID,
                         endTime: Date.now(),
                         readingsCount: this.eventCount
                     }
@@ -299,7 +294,7 @@ export class RecordView extends View {
                 let data = cbor.encode({
                     command: "START_SESSION",
                     payload: {
-                        sessionIdentifier: this.session.getIdentifier(),
+                        sessionIdentifier: this.sessionUUID,
                         startTime: Date.now()
                     }
                 });

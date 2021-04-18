@@ -1,52 +1,39 @@
-import FileHandler from "../../common/FileHandler";
-import { SENSOR_DEFINITIONS } from '../sensor/SensorDefinitions';
+import { existsSync, writeFileSync, readFileSync } from "fs";
 
-export class PreferencesManager {
-
-    fHandler = new FileHandler();
-    
-    preferencesExist() {
-        return this.fHandler.fileExists("preferences.json");
-    }
+export default class PreferencesManager {
 
     getPreferenceObject() {
-        return this.fHandler.readJSONFile("preferences.json");
+        return readFileSync("preferences.json", "json");
     }
 
     getSensors() {
-        if (this.fHandler.fileExists("preferences.json")) {
+        if (existsSync("/private/data/preferences.json")) {
             return this.getPreferenceObject().sensorList;
         }
         return [];
     }
 
-    createPreferences() {
-        this.fHandler.writeJSONFile("preferences.json", { sensorList: []});
-        let readSensorList = this.getPreferenceObject().sensorList;
-
-        SENSOR_DEFINITIONS.forEach(element => {
-            let sensor = element.sensor;
-
-            if (!readSensorList.some(e => e.sensor === sensor)) {
-                let newSensor = {
-                    sensor: sensor,
-                    displayName: element.displayName,
-                    enabled: true,
-                    sampling: {
-                        element: 2,
-                        rate: 1
-                    }
-                }
-                readSensorList.push(newSensor);
-            }
-        });
-
-        this.fHandler.writeJSONFile("preferences.json", { sensorList: readSensorList });
-    }
-
     createPreferencesIfNotExists() {
-        if (!this.preferencesExist()) {
-            this.createPreferences();
+        if (!existsSync("/private/data/preferences.json")) {
+            const sensorDefLoader = () => import("../sensor/sensorDefinitions");
+            sensorDefLoader().then((module) => {
+                const { SENSOR_DEFINITIONS } = module;
+                let readSensorList = []
+                SENSOR_DEFINITIONS.forEach(i => {
+                    readSensorList.push({
+                        sensor: i.sensor,
+                        displayName: i.displayName,
+                        enabled: true,
+                        sampling: {
+                            element: 2,
+                            rate: 1
+                        }
+                    });
+                });
+                writeFileSync("preferences.json", { sensorList: readSensorList}, "json");
+            }).catch((e) => {
+                console.log(`Something bad happened, could load sensor list: ${e}`)
+            });
         }
     }
 
@@ -66,7 +53,7 @@ export class PreferencesManager {
 
         sensorList[index].enabled = status;
 
-        this.fHandler.writeJSONFile("preferences.json", { sensorList: sensorList });
+        writeFileSync("preferences.json", { sensorList: sensorList}, "json");
     }
 
     getSensorFrequencyFor(s) {
@@ -92,7 +79,7 @@ export class PreferencesManager {
         sensorList[index].sampling.element = selectedIndex;
         sensorList[index].sampling.rate = selectedValue;
 
-        this.fHandler.writeJSONFile("preferences.json", { sensorList: sensorList });
+        writeFileSync("preferences.json", { sensorList: sensorList}, "json");
     }
 
 }

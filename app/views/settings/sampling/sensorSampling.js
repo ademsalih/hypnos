@@ -1,5 +1,4 @@
-import FileHandler from '../../../../common/FileHandler';
-import { PreferencesManager } from '../../../lib/PreferenceManager';
+import PreferencesManager from '../../../lib/PreferenceManager';
 import { Application } from '../../../lib/view';
 import { View, $at } from '../../../lib/view'
 

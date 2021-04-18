@@ -1,7 +1,7 @@
-import FileHandler from '../../../../common/FileHandler';
 import { Application } from '../../../lib/view';
 import { View, $at } from '../../../lib/view'
 import * as fs from "fs";
+import PreferencesManager from '../../../lib/PreferenceManager';
 
 const $ = $at( '#toggleSensor' );
 
@@ -12,9 +12,8 @@ export class ToggleSensor extends View {
     onMount(){
         console.log("[Settings > ToggleSensor] onMount()")
 
-        let fileHandler = new FileHandler();
-        let preferencesObject = fileHandler.readJSONFile("preferences.json");
-        let sensorList = preferencesObject.sensorList;
+        const pm = new PreferencesManager();
+        let sensorList = pm.getSensors()
 
         console.log(sensorList);
     
@@ -36,8 +35,7 @@ export class ToggleSensor extends View {
                     tile.firstChild.text = sensorList[info.index].displayName;
 
                     tile.firstChild.onclick = (evt) => {
-                        sensorList[info.index].enabled = !sensorList[info.index].enabled
-                        fs.writeFileSync("preferences.json", preferencesObject, "json");
+                        pm.setSensorStatus(sensorList[info.index].sensor, !sensorList[info.index].enabled)
                     };
                 }
             }

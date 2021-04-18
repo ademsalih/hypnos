@@ -1,7 +1,7 @@
 import { Application } from '../../../lib/view';
 import { View, $at } from '../../../lib/view'
-import FileHandler from '../../../../common/FileHandler';
-import { PreferencesManager } from '../../../lib/PreferenceManager';
+import PreferencesManager from '../../../lib/PreferenceManager';
+import FileHandler from '../../../lib/FileHandler';
 
 const $ = $at( '#samplingTumbler' );
 
