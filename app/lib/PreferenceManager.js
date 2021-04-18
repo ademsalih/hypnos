@@ -13,7 +13,7 @@ export default class PreferencesManager {
         return [];
     }
 
-    createPreferencesIfNotExists() {
+    static createPreferencesIfNotExists() {
         if (!existsSync("/private/data/preferences.json")) {
             const sensorDefLoader = () => import("../sensor/sensorDefinitions");
             sensorDefLoader().then((module) => {

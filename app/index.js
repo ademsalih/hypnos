@@ -34,9 +34,7 @@ class MultiScreenApp extends Application {
     init() {
         me.appTimeoutEnabled = false;
 
-        const pm = new PreferencesManager();
-        pm.createPreferencesIfNotExists();
-        pm = null;
+        PreferencesManager.createPreferencesIfNotExists();
 
         messaging.peerSocket.addEventListener("open", (evt) => {
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
