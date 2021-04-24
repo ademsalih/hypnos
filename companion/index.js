@@ -3,7 +3,18 @@ import { WebSocketHandler } from "./WebSocketHandler";
 import { inbox } from "file-transfer";
 import * as cbor from "cbor";
 import { localStorage } from "local-storage";
-import { me } from "companion";
+import { me as companion } from "companion";
+
+companion.addEventListener("readystatechange", doThis);
+function doThis() {
+  console.log("Device application was launched!");
+}
+
+companion.addEventListener("unload", () => {
+    console.log(`Close Reason: `)
+    console.log("Sending DISCONENCT to Ionic...")
+    messaging.peerSocket.send("DISCONNECT");
+});
 
 const port = 8887;
 const host = "127.0.0.1";
@@ -14,11 +25,6 @@ var isBuffering = false;
 var sessionInProgress = false;
 
 localStorage.setItem("sessionBuffer", JSON.stringify({buffer:[]}));
-
-me.addEventListener("onunload", () => {
-    console.log("Sending DISCONENCT to Ionic...")
-    messaging.peerSocket.send("DISCONNECT");
-})
 
 websocket.setOnMessage((message) => {
     console.log(`Android Server says: ${message}`)
@@ -38,6 +44,18 @@ websocket.setOnClose(() => {
 messaging.peerSocket.addEventListener("open", (evt) => {
     console.log("Ready to send or receive messages");
 });
+
+
+async function processAllFiles() {
+    let file;
+    while ((file = await inbox.pop())) {
+        //const payload = await file.cbor();
+        //console.log(`RECEIVED DATA: ${JSON.stringify(payload)}`)
+    }
+}
+
+inbox.addEventListener("newfile", processAllFiles);
+processAllFiles();
 
 messaging.peerSocket.addEventListener("message", (evt) => {
     let message = cbor.decode(evt.data);
@@ -106,18 +124,3 @@ messaging.peerSocket.addEventListener("message", (evt) => {
             break;
     }
 });
-
-
-/* async function processAllFiles() {
-    let file;
-    while ((file = await inbox.pop())) {
-        const payload = await file.cbor();
-        console.log(`RECEIVED BUFFER: ${payload.buffer.length}`)
-
-        let bufferArray = payload.buffer;
-        bufferArray.forEach(item => websocket.send(item));
-    }
-}
-
-inbox.addEventListener("newfile", processAllFiles);
-processAllFiles() */

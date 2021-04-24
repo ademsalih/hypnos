@@ -9,6 +9,7 @@
         <use id="item5" href="#tumbler-item" class="item"><text id="content">15</text></use>
         <use id="item6" href="#tumbler-item" class="item"><text id="content">20</text></use>
         <use id="item7" href="#tumbler-item" class="item"><text id="content">25</text></use>
+        <use id="item8" href="#tumbler-item" class="item"><text id="content">30</text></use>
     </use>
 
     <text fill="white" x="60%" y="60%" font-size="40">Hz</text>
