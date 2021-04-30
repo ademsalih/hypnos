@@ -39,7 +39,7 @@ class MultiScreenApp extends Application {
         messaging.peerSocket.addEventListener("open", (evt) => {
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
                 let data = cbor.encode({
-                    command: "SEARCH",
+                    command: "START_SEARCH",
                     data: {
                         modelName: device.modelName
                     }
@@ -66,13 +66,17 @@ class MultiScreenApp extends Application {
 }
 
 setInterval(() => {
-    const data = `MEMORY: ${memory.js.used}/65528  ${Math.round( (memory.js.used/65528)*100*10 ) / 10}%`;
-    if (memory.js.used > (65528*0.95)) {
+    const used = memory.js.used;
+    
+    const data = `MEMORY: ${used}/65528  ${Math.round( (used/65528)*100*10 ) / 10}%`;
+    if (used > (65528*0.95)) {
         console.error(data);
-    } else if (memory.js.used > (65528*0.90)) {
+    } else if (used > (65528*0.90)) {
         console.warn(data);
+    } else {
+        console.log(data);
     }
-}, 500);
+}, 1000);
 
 // Start the application with Main-screen.
 MultiScreenApp.start('Main');

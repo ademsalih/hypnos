@@ -1,6 +1,6 @@
 import { Application } from '../lib/view';
 import { View, $at } from '../lib/view'
-import { memory } from "system";
+import { listDirSync } from "fs";
 
 const $ = $at( '#main' );
 
@@ -10,9 +10,6 @@ export class Main extends View {
     connected = false;
 
     onMount(props){
-        console.log("[Main] onMount()");
-        console.log(`MEMORY: ${memory.js.used}/65528  ${Math.round( (memory.js.used/65528)*100*10 ) / 10}%`);
-        
         if (props) this.connected = props.connected;
         
         const newSessionButton = $( '#newSessionButton' );
@@ -20,11 +17,22 @@ export class Main extends View {
 
         const settingsButton = $( '#settingsButton' );
         settingsButton.addEventListener("click", this.settingsButtonClickHandler);
+
+        let n = 0;
+        const listDir = listDirSync("/private/data");
+        let dirIter = null;
+        while((dirIter = listDir.next()) && !dirIter.done) {
+            n+=1;
+        }
+
+        console.log(`${n} files`)
     }
 
     onPropChange(props) {
-        this.connected = props.connected;
-        this.render();
+        if (this.connected != props.connected) {
+            this.connected = props.connected;
+            this.render();
+        }
     }
 
     onRender(){

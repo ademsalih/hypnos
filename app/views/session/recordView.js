@@ -14,6 +14,12 @@ import * as cbor from "cbor";
 import { me as device } from "device";
 import * as messaging from "messaging";
 import { outbox } from "file-transfer";
+import { createReading } from '../../reading/createReading';
+
+import { memory } from "system";
+import { Memory } from '../../sensor/sensors/MemorySensor';
+
+import { writeFileSync, unlinkSync } from "fs";
 
 const $ = $at( '#recordView' );
 
@@ -27,15 +33,19 @@ export class RecordView extends View {
     eventCount;
     sessionUUID;
 
-    hrm = new HeartRateSensor();
+    /* hrm = new HeartRateSensor(); */
     acc = new Accelerometer();
     baro = new Barometer();
-    /* batt = new Battery();
-    mem = new Memory(); */
+    /* batt = new Battery();*/
+    mem = new Memory(); 
     gyro = new Gyroscope();
 
     batch = [];
     count = 0;
+    files = [];
+
+    sessionMixedText = $('#sessionMixedText');
+    sessionMixedTextCopy = this.sessionMixedText.getElementById("copy");
     
     onMount(props){
         console.log("[RecordView] onMount()");
@@ -43,23 +53,24 @@ export class RecordView extends View {
         
         const prefManager = new PreferencesManager();
 
-        const hrmF = prefManager.getSensorFrequencyFor("HEARTRATE");
-        this.hrm.setOptions({ frequency: hrmF.frequency })
+        /* const hrmF = prefManager.getSensorFrequencyFor("HEARTRATE");
+        this.hrm.setOptions({ frequency: hrmF.frequency, batch: 1 }); */
 
         const accF = prefManager.getSensorFrequencyFor("ACCELEROMETER");
-        this.acc.setOptions({ frequency: accF.frequency, batch: 5 });
+        this.acc.setOptions({ frequency: 10, batch: 20 });
 
         const baroF = prefManager.getSensorFrequencyFor("BAROMETER");
-        this.baro.setOptions({ frequency: baroF.frequency, batch: 5 });
+        this.baro.setOptions({ frequency: 1, batch: 20 });
 
         const gyroF = prefManager.getSensorFrequencyFor("GYROSCOPE")
-        this.gyro.setOptions({ frequency: gyroF.frequency, batch: 5 });
-
-        /* const battF = prefManager.getSensorFrequencyFor("BATTERY");
-        this.batt.setOptions({ frequency: battF.frequency })
+        this.gyro.setOptions({ frequency: 10, batch: 20 });
 
         const memF = prefManager.getSensorFrequencyFor("MEMORY");
-        this.mem.setOptions({ frequency: memF.frequency }) */
+        this.mem.setOptions({ frequency: 1, batch: 20 })
+
+        /* const battF = prefManager.getSensorFrequencyFor("BATTERY");
+        this.batt.setOptions({ frequency: battF.frequency })*/
+
 
         const sessionControlButton = $('#sessionControlButton');
         sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
@@ -67,10 +78,10 @@ export class RecordView extends View {
         this.eventCount = 0;
         this.sessionUUID = getUUID();
 
-        this.hrm.onreading = this.heartRateEventHandler.bind(this);
+        //this.hrm.onreading = this.heartRateEventHandler.bind(this);
         this.acc.onreading = this.accelerometerEventHandler.bind(this);
-        /* this.batt.onreading = this.batteryEventHandler.bind(this);
-        this.mem.onreading = this.memoryEventHandler.bind(this); */
+        /* this.batt.onreading = this.batteryEventHandler.bind(this);*/
+        this.mem.onreading = this.memoryEventHandler.bind(this);
         this.gyro.onreading = this.gyroscopeEventHandler.bind(this);
         this.baro.onreading = this.barometerEventHandler.bind(this);
         
@@ -89,10 +100,10 @@ export class RecordView extends View {
                             "name": "GYROSCOPE",
                             "frequency": gyroF.frequency
                         },
-                        {
+                        /* {
                             "name": "HEARTRATE",
                             "frequency": hrmF.frequency
-                        },
+                        }, */
                         {
                             "name": "BAROMETER",
                             "frequency": baroF.frequency
@@ -100,49 +111,71 @@ export class RecordView extends View {
                         {
                             "name": "BATTERY",
                             "frequency": battF.frequency
-                        },
+                        }*/,
                         {
                             "name": "MEMORY",
                             "frequency": memF.frequency
-                        } */
+                        }
                     ]
                 }
             })
             messaging.peerSocket.send(data);
         }
 
-        setInterval(() => {
-            if (this.count > 100) {
-                let preSize = this.batch.length;
-                console.log(`DISPATCHING ${preSize} items...`)
+        /* setInterval(() => {
+            this.sessionMixedTextCopy.text = `F: ${this.files.length}   C: ${this.count}   B: ${this.batch.length}`;
+            //console.log(`${Math.round( (memory.js.used/65528)*100*10 ) / 10}% | ${this.files.length} | ${this.count} | ${this.batch.length}`);
+        }, 500); */
 
-                outbox.enqueue("data", cbor.encode(this.batch))
-                .then((ft) => {
-                    console.log("DISPATCH OK")
-                    this.batch = this.batch.splice(preSize);
-                    this.count = 0;
+        this.dispatchInterval = setInterval(() => {
+            this.dispatch();
+        }, 25000);
+    }
+
+    store(reading) {
+        this.batch.push(reading);
+        this.count += 20;
+        //console.log(`Caching... (${this.batch.length})`)
+
+        if (this.count > 140) {
+            let now = Date.now();
+
+            writeFileSync(`${this.sessionUUID}${now}`, {
+                command: "ADD_READING",
+                payload: {
+                    sessionIdentifier: this.sessionUUID,
+                    data: [...this.batch]
+                }
+            }, 'cbor');
+
+            this.batch = this.batch.splice(this.batch.length);
+            
+            this.files.push(now);
+            this.count = 0;
+        }
+    }
+
+    dispatch() {
+        //console.log("Dispatching...")
+        let dispatchQueue = this.files.slice(0, this.files.length);
+        this.files = this.files.splice(this.files.length);
+        
+        for (let i = 0; i < dispatchQueue.length; i++) {
+
+            setTimeout(() => {
+                let path = `/private/data/${this.sessionUUID}${dispatchQueue[i]}`;
+                outbox.enqueueFile(path).then(() => {
+                    // should delete file right away because successfully staged transfers
+                    // are stored in same location as our disk cache
                 })
                 .catch((error) => {
                     console.log(`Failed to schedule transfer: ${error}`);
                 })
-            }
-        }, 80);
-    }
+                unlinkSync(path);
+                // maybe here..?
+            }, 200*i);
 
-    heartRateEventHandler() {
-        this.batch.push({
-            sensor: "HEARTRATE",
-            timestamp: [Date.now()],
-            values: [
-                {
-                    type: "BPM",
-                    items: [this.hrm.heartRate]
-                }
-            ]
-        });
-
-        this.eventCount += 1;
-        this.count += 1;
+        }
     }
 
     barometerEventHandler() {
@@ -160,19 +193,9 @@ export class RecordView extends View {
         } while(i--);
         ts[0] = now;
 
-        this.batch.push({
-            sensor: "BAROMETER",
-            timestamps: ts,
-            values: [
-                {
-                    type: "PRESSURE",
-                    items: p
-                }
-            ]
-        });
+        this.eventCount += 20;
 
-        this.eventCount += 5;
-        this.count += 5;
+        this.store(createReading("BAROMETER",ts,["PRESSURE"],[p]), 20);
     }
 
     accelerometerEventHandler() {
@@ -180,7 +203,6 @@ export class RecordView extends View {
         let x = Array.prototype.slice.call(this.acc.readings.x);
         let y = Array.prototype.slice.call(this.acc.readings.y);
         let z = Array.prototype.slice.call(this.acc.readings.z);
-        
         
         let ts = [];
         let i = this.acc.readings.timestamp.length - 1;
@@ -193,27 +215,9 @@ export class RecordView extends View {
         } while(i--);
         ts[0] = now;
 
-        this.batch.push({
-            sensor: "ACCELEROMETER",
-            timestamps: ts,
-            values: [
-                {
-                    type: "X",
-                    items: x
-                },
-                {
-                    type: "Y",
-                    items: y
-                },
-                {
-                    type: "Z",
-                    items: z
-                }
-            ]
-        });
+        this.eventCount += 20;
 
-        this.eventCount += 15;
-        this.count += 15;
+        this.store(createReading("ACCELEROMETER",ts,['X','Y','Z'],[x, y, z]), 20);
     }
 
     gyroscopeEventHandler() {
@@ -233,41 +237,29 @@ export class RecordView extends View {
         } while(i--);
         ts[0] = now;
 
-        this.batch.push({
-            sensor: "GYROSCOPE",
-            timestamps: ts,
-            values: [
-                {
-                    type: "X",
-                    items: x
-                },
-                {
-                    type: "Y",
-                    items: y
-                },
-                {
-                    type: "Z",
-                    items: z
-                }
-            ]
-        });
+        this.eventCount += 20;
 
-        this.eventCount += 15;
-        this.count += 15;
+        this.store(createReading("GYROSCOPE", ts, ['X','Y','Z'],[x, y, z]), 20);
     }
     
-    /* memoryEventHandler() {
-        let data = cbor.encode({
-            command: "ADD_READING",
-            payload: new MemoryReading(this.sessionUUID, this.mem.val, this.mem.timestamp).get()
-        });
+    memoryEventHandler() {
+        let ts = [];
 
-        if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-            messaging.peerSocket.send(data);
-            this.eventCount += 1;
-        }
+        let i = this.mem.readings.timestamp.length - 1;
+        let lastTs = this.mem.readings.timestamp[i];
+        do {
+            let currTs = this.mem.readings.timestamp[i];
+            let diff = lastTs - currTs;
+            ts.push(diff);
+        } while(i--);
+        ts[0] = this.mem.readings.timestamp[0];
+
+        this.eventCount += 20;
+
+        this.store(createReading("MEMORY", ts, ["PERCENTAGE"], [this.mem.readings.val]), 20);
     }
 
+    /*
     batteryEventHandler() {
         let data = cbor.encode({
             command: "ADD_READING",
@@ -280,12 +272,26 @@ export class RecordView extends View {
         }
     } */
 
+    /* heartRateEventHandler() {
+        let hrs = Array.prototype.slice.call(this.hrm.readings.heartRate);
+
+        this.batch.push(createReading(
+            "HEARTRATE",
+            [Date.now()],
+            ["BPM"],
+            [hrs]
+        ));
+
+        this.eventCount += 1;
+        this.count += 1;
+    } */
+
     onUnmount(){
         console.log("[RecordView] onUnmount()")
-        this.hrm.onreading = null;
+        //this.hrm.onreading = null;
         this.acc.onreading = null;
-        /* this.batt.onreading = null;
-        this.mem.onreading = null; */
+        //this.batt.onreading = null;
+        this.mem.onreading = null;
         this.gyro.onreading = null; 
         this.baro.onreading = null;
 
@@ -350,6 +356,17 @@ export class RecordView extends View {
      */
     startSessionButtonHandler = () => {
         if (this.running) {
+            //this.hrm.stop();
+            this.acc.stop();
+            //this.batt.stop();
+            this.mem.stop();
+            this.gyro.stop();
+            this.baro.stop();
+
+            this.running = false;
+            
+            clearInterval(this.dispatchInterval);
+
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
                 let data = cbor.encode({
                     command: "STOP_SESSION",
@@ -359,17 +376,15 @@ export class RecordView extends View {
                         readingsCount: this.eventCount
                     }
                 });
-                messaging.peerSocket.send(data);
+                
+                this.dispatch();
+
+                setTimeout(() => {
+                    messaging.peerSocket.send(data);
+                }, 2000);
             }
 
-            this.hrm.stop();
-            this.acc.stop();
-            /* this.batt.stop();
-            this.mem.stop(); */
-            this.gyro.stop();
-            this.baro.stop();
-
-            this.running = false;
+            
             Application.switchToWithState('Summary', this.eventCount);
         } else {
             console.log("[RecordView] Sending START_SESSION...")
@@ -384,10 +399,10 @@ export class RecordView extends View {
                 messaging.peerSocket.send(data);
             }
             
-            this.hrm.start();
+            //this.hrm.start();
             this.acc.start();
-            /* this.batt.start();
-            this.mem.start(); */
+            // this.batt.start();
+            this.mem.start();
             this.gyro.start();
             this.baro.start();
 

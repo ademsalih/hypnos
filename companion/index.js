@@ -4,17 +4,15 @@ import { inbox } from "file-transfer";
 import * as cbor from "cbor";
 import { localStorage } from "local-storage";
 import { me as companion } from "companion";
+import { app } from "peer";
 
-companion.addEventListener("readystatechange", doThis);
-function doThis() {
-  console.log("Device application was launched!");
-}
+/* app.addEventListener("readystatechange", () => {
+    console.log("Hypnos closed on Ionic...")
+    console.log("Yielding...")
+    companion.yield();
+}); */
 
-companion.addEventListener("unload", () => {
-    console.log(`Close Reason: `)
-    console.log("Sending DISCONENCT to Ionic...")
-    messaging.peerSocket.send("DISCONNECT");
-});
+companion.wakeInterval = 5 * 1000 * 61
 
 const port = 8887;
 const host = "127.0.0.1";
@@ -49,8 +47,22 @@ messaging.peerSocket.addEventListener("open", (evt) => {
 async function processAllFiles() {
     let file;
     while ((file = await inbox.pop())) {
-        //const payload = await file.cbor();
-        //console.log(`RECEIVED DATA: ${JSON.stringify(payload)}`)
+        const payload = await file.cbor();
+
+        switch (payload.command) {
+            case "ADD_READING":
+                if (!isBuffering) {
+                    websocket.send(JSON.stringify(payload));
+                } else {
+                    let sessionBuffer = JSON.parse(localStorage.getItem("sessionBuffer"));
+                    console.log(`BUFFERING, buffer size: ${sessionBuffer.buffer.length}, buffering element: ${JSON.stringify(message)}`);
+                    sessionBuffer.buffer.push(message);
+                    localStorage.setItem("sessionBuffer", JSON.stringify(sessionBuffer));
+                }
+                break;
+            default:
+                break;
+        }
     }
 }
 
@@ -62,8 +74,8 @@ messaging.peerSocket.addEventListener("message", (evt) => {
     let command = message.command;
 
     switch (command) {
-        case "ADD_READING":
-             if (!isBuffering) {
+        /* case "ADD_READING":
+            if (!isBuffering) {
                 websocket.send(JSON.stringify(message));
             } else {
                 let sessionBuffer = JSON.parse(localStorage.getItem("sessionBuffer"));
@@ -71,8 +83,8 @@ messaging.peerSocket.addEventListener("message", (evt) => {
                 sessionBuffer.buffer.push(message);
                 localStorage.setItem("sessionBuffer", JSON.stringify(sessionBuffer));
             }
-            break;
-        case "SEARCH":
+            break; */
+        case "START_SEARCH":
             console.log("Received new session request from Ionic...")
             websocket.setOnOpen(() => {
                 messaging.peerSocket.send("CONNECT");
