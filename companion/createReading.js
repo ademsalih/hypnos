@@ -1,4 +1,4 @@
-export const createReading = (sensorName, timestamps, types, items) => {
+export const createReading = (types, items) => {
 
     let values = []
 
@@ -9,10 +9,5 @@ export const createReading = (sensorName, timestamps, types, items) => {
         })
     });
 
-    return {
-        "sensor": sensorName,
-        "timestamps": timestamps,
-        "values": values
-    }
-
+    return values;
 }

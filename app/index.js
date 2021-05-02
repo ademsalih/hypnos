@@ -14,8 +14,7 @@ import { me as device } from "device";
 import { me } from "appbit";
 import PreferencesManager from './lib/PreferenceManager';
 
-
-class MultiScreenApp extends Application {
+class HypnosApplication extends Application {
 
     screens = {
         Main,
@@ -76,7 +75,6 @@ setInterval(() => {
     } else {
         console.log(data);
     }
-}, 1000);
+}, 2000);
 
-// Start the application with Main-screen.
-MultiScreenApp.start('Main');
+HypnosApplication.start('Main');

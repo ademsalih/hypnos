@@ -25,6 +25,8 @@ var sessionInProgress = false;
 
 localStorage.setItem("sessionBuffer", JSON.stringify({buffer:[]}));
 
+let uuid = localStorage.getItem("sessionUUID");
+
 websocket.setOnMessage((message) => {
     console.log(`Android Server says: ${message}`)
 })
@@ -43,7 +45,6 @@ websocket.setOnClose(() => {
 messaging.peerSocket.addEventListener("open", (evt) => {
     console.log("Ready to send or receive messages");
 });
-
 
 let config = [
     {
@@ -70,6 +71,13 @@ let config = [
         types: [
             'PASCAL'
         ]
+    },
+    {
+        sensorName: "HEARTRATE",
+        typeCount: 1,
+        types: [
+            'BPM'
+        ]
     }
 ]
 
@@ -77,9 +85,6 @@ async function processAllFiles() {
     let file;
     while ((file = await inbox.pop())) {
         const payload = await file.arrayBuffer();
-
-        //console.log(`File name: ${file.name}`);
-        //console.log(`File length: ${file.length}`);
 
         let bytes = new Float64Array(payload);
 
@@ -111,8 +116,6 @@ async function processAllFiles() {
             for (let k = 0; k < typeCount; k++) {
                 let base = typeCount * i + k;
 
-                //console.log(`i=${i}  k=${k}  base=${base}  dataPoint=${bytes[base]}`);
-                
                 let dataPoint = bytes[base];
 
                 let a = data[k];
@@ -122,14 +125,14 @@ async function processAllFiles() {
 
         //console.log(`data after: ${JSON.stringify(data)}`)
 
-        
-        let reading = createReading(sensor, data[0], types, data.slice(1, typeCount));
+        let reading = createReading(types, data.slice(1, typeCount));
 
         let toSend = {
             command: "ADD_READING",
             payload: {
-                sessionIdentifier: this.sessionUUID,
-                /* sensorIdentifier: sensor, */
+                sessionIdentifier: uuid,
+                sensorIdentifier: sensor,
+                timestamps: data[0],
                 data: reading
             }
         }
@@ -153,16 +156,6 @@ messaging.peerSocket.addEventListener("message", (evt) => {
     let command = message.command;
 
     switch (command) {
-        /* case "ADD_READING":
-            if (!isBuffering) {
-                websocket.send(JSON.stringify(message));
-            } else {
-                let sessionBuffer = JSON.parse(localStorage.getItem("sessionBuffer"));
-                console.log(`BUFFERING, buffer size: ${sessionBuffer.buffer.length}, buffering element: ${JSON.stringify(message)}`);
-                sessionBuffer.buffer.push(message);
-                localStorage.setItem("sessionBuffer", JSON.stringify(sessionBuffer));
-            }
-            break; */
         case "START_SEARCH":
             console.log("Received new session request from Ionic...")
             websocket.setOnOpen(() => {
@@ -189,6 +182,9 @@ messaging.peerSocket.addEventListener("message", (evt) => {
             websocket.stop();
             break;
         case "INIT_SESSION":
+            uuid = message.payload.sessionIdentifier;
+            localStorage.setItem("sessionUUID", message.payload.sessionIdentifier);
+            
             websocket.send(JSON.stringify(message));
             break;
         case "START_SESSION":
@@ -197,18 +193,6 @@ messaging.peerSocket.addEventListener("message", (evt) => {
             break;
         case "STOP_SESSION":
             sessionInProgress = false;
-            /* if (isBuffering) {
-                let sessionBuffer = JSON.parse(localStorage.getItem("sessionBuffer"));
-
-                if (websocket.connectionOpen()) {
-                    sessionBuffer.buffer.forEach(item => {
-                        websocket.send(JSON.stringify(item));
-                    });
-
-                    localStorage.setItem("sessionBuffer", JSON.stringify({buffer:[]}));
-                }
-                isBuffering = false;
-            } */
             websocket.send(JSON.stringify(message));
             break;
         default:

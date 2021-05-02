@@ -18,8 +18,8 @@ import { outbox } from "file-transfer";
 import { memory } from "system";
 import { Memory } from '../../sensor/sensors/MemorySensor';
 
-import { writeFileSync, unlinkSync } from "fs";
 import * as fs from "fs";
+import DispatchManager from '../../lib/DispatchManager';
 
 const $ = $at( '#recordView' );
 
@@ -33,30 +33,39 @@ export class RecordView extends View {
     eventCount;
     sessionUUID;
 
-    /* hrm = new HeartRateSensor(); */
     acc = new Accelerometer();
     baro = new Barometer();
-    /* batt = new Battery();*/
-    //mem = new Memory(); 
     gyro = new Gyroscope();
+    hrm = new HeartRateSensor();
+    // batt = new Battery();
+    //mem = new Memory();
 
-    batch = [];
-    count = 0;
-    files = [];
+    dispatchManager = new DispatchManager();
 
     sessionMixedText = $('#sessionMixedText');
     sessionMixedTextCopy = this.sessionMixedText.getElementById("copy");
 
     /** These should be joined in some kind of variable **/
 
-    accCounter = 0;
-    accFilename = `ACCELEROMETER.${Date.now()}`;
+    sensorFiles = {
+        "ACCELEROMETER": {
+            counter: 0,
+            fileName: `ACCELEROMETER.${Date.now()}`
+        },
+        "GYROSCOPE": {
+            counter: 0,
+            fileName: `GYROSCOPE.${Date.now()}`
+        },
+        "BAROMETER": {
+            counter: 0,
+            fileName: `BAROMETER.${Date.now()}`
+        },
+        "HEARTRATE": {
+            counter: 0,
+            fileName: `HEARTRATE.${Date.now()}`
+        }
+    }
 
-    gyroCounter = 0;
-    gyroFilename = `GYROSCOPE.${Date.now()}`;
-
-    baroCounter = 0;
-    baroFilename = `BAROMETER.${Date.now()}`;
 
     /*****************************************************/
     
@@ -66,9 +75,6 @@ export class RecordView extends View {
         
         const prefManager = new PreferencesManager();
 
-        /* const hrmF = prefManager.getSensorFrequencyFor("HEARTRATE");
-        this.hrm.setOptions({ frequency: hrmF.frequency, batch: 1 }); */
-
         const accF = prefManager.getSensorFrequencyFor("ACCELEROMETER");
         this.acc.setOptions({ frequency: 20, batch: 40 });
 
@@ -77,6 +83,9 @@ export class RecordView extends View {
 
         const gyroF = prefManager.getSensorFrequencyFor("GYROSCOPE")
         this.gyro.setOptions({ frequency: 20, batch: 40 });
+
+        const hrmF = prefManager.getSensorFrequencyFor("HEARTRATE");
+        this.hrm.setOptions({ frequency: 1, batch: 2 });
 
         /* const memF = prefManager.getSensorFrequencyFor("MEMORY");
         this.mem.setOptions({ frequency: 1, batch: 20 }) */
@@ -93,7 +102,7 @@ export class RecordView extends View {
         this.acc.onreading = this.accelerometerEventHandler.bind(this);
         this.gyro.onreading = this.gyroscopeEventHandler.bind(this);
         this.baro.onreading = this.barometerEventHandler.bind(this);
-        //this.hrm.onreading = this.heartRateEventHandler.bind(this);
+        this.hrm.onreading = this.heartRateEventHandler.bind(this);
         //this.batt.onreading = this.batteryEventHandler.bind(this);
         //this.mem.onreading = this.memoryEventHandler.bind(this);
         
@@ -112,10 +121,10 @@ export class RecordView extends View {
                             "name": "GYROSCOPE",
                             "frequency": gyroF.frequency
                         },
-                        /* {
+                        {
                             "name": "HEARTRATE",
                             "frequency": hrmF.frequency
-                        }, */
+                        },
                         {
                             "name": "BAROMETER",
                             "frequency": baroF.frequency
@@ -133,60 +142,6 @@ export class RecordView extends View {
             })
             messaging.peerSocket.send(data);
         }
-
-        /* setInterval(() => {
-            //this.sessionMixedTextCopy.text = `${Math.round( (memory.js.used/65528)*100*10 ) / 10}%`;
-            console.log(`${Math.round( (memory.js.used/65528)*100*10 ) / 10}%`);
-        }, 500); */
-
-        this.dispatchInterval = setInterval(() => {
-            this.dispatch();
-        }, 15000);
-    }
-
-    /* store(reading) {
-        this.batch.push(reading);
-        this.count += 20;
-        //console.log(`Caching... (${this.batch.length})`)
-
-        if (this.count > 140) {
-            let now = Date.now();
-
-            writeFileSync(`${this.sessionUUID}${now}`, {
-                command: "ADD_READING",
-                payload: {
-                    sessionIdentifier: this.sessionUUID,
-                    data: [...this.batch]
-                }
-            }, 'cbor');
-
-            this.batch = this.batch.splice(this.batch.length);
-            
-            this.files.push(now);
-            this.count = 0;
-        }
-    } */
-
-    dispatch() {
-        //console.log("Dispatching...")
-        let dispatchQueue = this.files.slice(0, this.files.length);
-        this.files = this.files.splice(this.files.length);
-        
-        for (let i = 0; i < dispatchQueue.length; i++) {
-
-            setTimeout(() => {
-                let path = `/private/data/${dispatchQueue[i]}`;
-                outbox.enqueueFile(path).then(() => {
-                    // should delete file right away because successfully staged transfers
-                    // are stored in same location as our disk cache
-                })
-                .catch((error) => {
-                    console.log(`Failed to schedule transfer: ${error}`);
-                })
-                unlinkSync(path);
-            }, 200*i);
-
-        }
     }
 
     appendToFile(fileName, buffer) {
@@ -195,7 +150,48 @@ export class RecordView extends View {
         fs.closeSync(file);
     }
 
+    readingHandler(sensor, values) {
+        let now = Date.now();
+        let n = (values[0]).length;
+        let count = values.length;
+
+        let buffer = new ArrayBuffer(8 * count * n);
+        let bytes = new Float64Array(buffer);
+        values[0] = this.adjustTimestamp(values[0], now);
+        
+        for (let i = 0; i < n; i++) {
+            for (let k = 0; k < count; k++) {
+                let b = count * i + k;
+                bytes[b] = values[k][i];
+            }
+        }
+
+        // Do this based on sensor parameter:
+        let elmo = this.sensorFiles[sensor];
+
+        if (elmo.counter > 8) {
+            this.dispatchManager.addToQueue(elmo.fileName);
+            elmo.fileName = `${sensor}.${Date.now()}`
+            elmo.counter = 0;
+        }
+        this.appendToFile(elmo.fileName, buffer);
+        elmo.counter += 1;
+        /////////////////////////////////////
+
+        this.eventCount += n;
+    }
+
     accelerometerEventHandler() {
+        this.readingHandler("ACCELEROMETER", [
+            this.acc.readings.timestamp,
+            this.acc.readings.x,
+            this.acc.readings.y,
+            this.acc.readings.z
+        ])
+    }
+
+    /* accelerometerEventHandler() {
+        let now = Date.now();
         let n = this.acc.readings.timestamp.length;
         let count = 4;
         let size = 8;
@@ -204,17 +200,19 @@ export class RecordView extends View {
         
         let buffer = new ArrayBuffer(total);
         let bytes = new Float64Array(buffer);
+
+        let ts = this.adjustTimestamp(this.acc.readings.timestamp, now);
         
-        for (let i = 0; i < this.acc.readings.timestamp.length; i++) {
+        for (let i = 0; i < n; i++) {
             let b = count * i;
-            bytes[b + 0] = this.acc.readings.timestamp[i];
+            bytes[b + 0] = ts[i];
             bytes[b + 1] = this.acc.readings.x[i];
             bytes[b + 2] = this.acc.readings.y[i];
             bytes[b + 3] = this.acc.readings.z[i];
         }
 
-        if (this.accCounter > 5) {
-            this.files.push(this.accFilename);
+        if (this.accCounter > 8) {
+            this.dispatchManager.addToQueue(this.accFilename);
             this.accFilename = `ACCELEROMETER.${Date.now()}`
             this.accCounter = 0;
         }
@@ -222,9 +220,11 @@ export class RecordView extends View {
         this.appendToFile(this.accFilename, buffer);
         
         this.accCounter+=1;
-    }
+        this.eventCount += n;
+    } */
 
     gyroscopeEventHandler() {
+        let now = Date.now();
         let n = this.gyro.readings.timestamp.length;
         let count = 4;
         let size = 8;
@@ -234,18 +234,17 @@ export class RecordView extends View {
         let buffer = new ArrayBuffer(total);
         let bytes = new Float64Array(buffer);
         
-        for (let i = 0; i < this.gyro.readings.timestamp.length; i++) {
-
+        let ts = this.adjustTimestamp(this.gyro.readings.timestamp, now);
+        for (let i = 0; i < n; i++) {
             let base = count * i;
-
-            bytes[base + 0] = this.gyro.readings.timestamp[i];
+            bytes[base + 0] = ts[i];
             bytes[base + 1] = this.gyro.readings.x[i];
             bytes[base + 2] = this.gyro.readings.y[i];
             bytes[base + 3] = this.gyro.readings.z[i];
         }
 
-        if (this.gyroCounter > 5) {
-            this.files.push(this.gyroFilename);
+        if (this.gyroCounter > 8) {
+            this.dispatchManager.addToQueue(this.gyroFilename);
             this.gyroFilename = `GYROSCOPE.${Date.now()}`
             this.gyroCounter = 0;
         }
@@ -253,9 +252,11 @@ export class RecordView extends View {
         this.appendToFile(this.gyroFilename, buffer);
         
         this.gyroCounter+=1;
+        this.eventCount += n;
     }
 
     barometerEventHandler() {
+        let now = Date.now();
         let n = this.baro.readings.timestamp.length;
         let count = 2;
         let size = 8;
@@ -265,16 +266,16 @@ export class RecordView extends View {
         let buffer = new ArrayBuffer(total);
         let bytes = new Float64Array(buffer);
         
-        for (let i = 0; i < this.baro.readings.timestamp.length; i++) {
+        let ts = this.adjustTimestamp(this.baro.readings.timestamp, now);
 
+        for (let i = 0; i < n; i++) {
             let base = count * i;
-
-            bytes[base + 0] = this.baro.readings.timestamp[i];
+            bytes[base + 0] = ts[i];
             bytes[base + 1] = this.baro.readings.pressure[i];
         }
 
-        if (this.baroCounter > 5) {
-            this.files.push(this.baroFilename);
+        if (this.baroCounter > 8) {
+            this.dispatchManager.addToQueue(this.baroFilename);
             this.baroFilename = `BAROMETER.${Date.now()}`
             this.baroCounter = 0;
         }
@@ -282,124 +283,58 @@ export class RecordView extends View {
         this.appendToFile(this.baroFilename, buffer);
         
         this.baroCounter+=1;
+        this.eventCount += n;
     }
 
-    /* accelerometerEventHandler() {
+    heartRateEventHandler() {
         let now = Date.now();
-        let x = Array.prototype.slice.call(this.acc.readings.x);
-        let y = Array.prototype.slice.call(this.acc.readings.y);
-        let z = Array.prototype.slice.call(this.acc.readings.z);
+        let n = this.hrm.readings.timestamp.length;
+        let count = 2;
+        let size = 8;
+
+        let total = size * count * n;
         
-        let ts = [];
-        let i = this.acc.readings.timestamp.length - 1;
-        let lastTs = this.acc.readings.timestamp[i];
-        now -= (lastTs - this.acc.readings.timestamp[0]);
-        do {
-            let currTs = this.acc.readings.timestamp[i];
-            let diff = lastTs - currTs;
-            ts.push(diff);
-        } while(i--);
-        ts[0] = now;
+        let buffer = new ArrayBuffer(total);
+        let bytes = new Float64Array(buffer);
+        
+        let ts = this.adjustTimestamp(this.hrm.readings.timestamp, now);
 
-        this.eventCount += 20;
-
-        this.store(createReading("ACCELEROMETER",ts,['X','Y','Z'],[x, y, z]), 20);
-    } */
-
-    /* gyroscopeEventHandler() {
-        let now = Date.now();
-        let x = Array.prototype.slice.call(this.gyro.readings.x);
-        let y = Array.prototype.slice.call(this.gyro.readings.y);
-        let z = Array.prototype.slice.call(this.gyro.readings.z);
-        let ts = [];
-
-        let i = this.gyro.readings.timestamp.length - 1;
-        let lastTs = this.gyro.readings.timestamp[i];
-        now -= (lastTs - this.gyro.readings.timestamp[0]);
-        do {
-            let currTs = this.gyro.readings.timestamp[i];
-            let diff = lastTs - currTs;
-            ts.push(diff);
-        } while(i--);
-        ts[0] = now;
-
-        this.eventCount += 20;
-
-        this.store(createReading("GYROSCOPE", ts, ['X','Y','Z'],[x, y, z]), 20);
-    } */
-
-    /* barometerEventHandler() {
-        let now = Date.now();
-        let p = Array.prototype.slice.call(this.baro.readings.pressure);
-        let ts = [];
-
-        let i = this.baro.readings.timestamp.length - 1;
-        let lastTs = this.baro.readings.timestamp[i];
-        now -= (lastTs - this.baro.readings.timestamp[0]);
-        do {
-            let currTs = this.baro.readings.timestamp[i];
-            let diff = lastTs - currTs;
-            ts.push(diff);
-        } while(i--);
-        ts[0] = now;
-
-        this.eventCount += 20;
-
-        this.store(createReading("BAROMETER",ts,["PRESSURE"],[p]), 20);
-    } */
-    
-    /* memoryEventHandler() {
-        let ts = [];
-
-        let i = this.mem.readings.timestamp.length - 1;
-        let lastTs = this.mem.readings.timestamp[i];
-        do {
-            let currTs = this.mem.readings.timestamp[i];
-            let diff = lastTs - currTs;
-            ts.push(diff);
-        } while(i--);
-        ts[0] = this.mem.readings.timestamp[0];
-
-        this.eventCount += 20;
-
-        this.store(createReading("MEMORY", ts, ["PERCENTAGE"], [this.mem.readings.val]), 20);
-    } */
-
-    /*
-    batteryEventHandler() {
-        let data = cbor.encode({
-            command: "ADD_READING",
-            payload: new BatteryReading(this.sessionUUID, this.batt.val, this.batt.timestamp).get()
-        });
-
-        if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-            messaging.peerSocket.send(data);
-            this.eventCount += 1;
+        for (let i = 0; i < n; i++) {
+            let base = count * i;
+            bytes[base + 0] = ts[i];
+            bytes[base + 1] = this.hrm.readings.heartRate[i];
         }
-    } */
 
-    /* heartRateEventHandler() {
-        let hrs = Array.prototype.slice.call(this.hrm.readings.heartRate);
+        if (this.hrmCounter > 20) {
+            this.dispatchManager.addToQueue(this.hrmFilename);
+            this.hrmFilename = `HEARTRATE.${Date.now()}`
+            this.hrmCounter = 0;
+        }
 
-        this.batch.push(createReading(
-            "HEARTRATE",
-            [Date.now()],
-            ["BPM"],
-            [hrs]
-        ));
+        this.appendToFile(this.hrmFilename, buffer);
+        
+        this.hrmCounter+=1;
+        this.eventCount += n;
+    }
 
-        this.eventCount += 1;
-        this.count += 1;
-    } */
+    adjustTimestamp(timestamps, reference) {
+        let ts = [];
+        let i = timestamps.length - 1;
+        let j = i;
+        let lastTs = timestamps[i];
+        do { ts.push(reference - lastTs + timestamps[j-i]) } while(i--);
+        return ts;
+    }
 
     onUnmount(){
         console.log("[RecordView] onUnmount()")
-        //this.hrm.onreading = null;
         this.acc.onreading = null;
-        //this.batt.onreading = null;
-        //this.mem.onreading = null;
         this.gyro.onreading = null; 
         this.baro.onreading = null;
+        this.hrm.onreading = null;
+
+        //this.batt.onreading = null;
+        //this.mem.onreading = null;
 
         const sessionMixedText = $('#sessionMixedText');
         const sessionMixedTextHeader = sessionMixedText.getElementById("header");
@@ -461,36 +396,38 @@ export class RecordView extends View {
      * is pressed and controls the sensors accordingly. 
      */
     startSessionButtonHandler = () => {
+        let time = Date.now();
+
         if (this.running) {
             this.acc.stop();
             this.gyro.stop();
             this.baro.stop();
-            //this.hrm.stop();
+            this.hrm.stop();
             //this.batt.stop();
             //this.mem.stop();
 
             this.running = false;
-            
-            clearInterval(this.dispatchInterval);
+
+            this.dispatchManager.addToQueue(this.accFilename);
+            this.dispatchManager.addToQueue(this.gyroFilename);
+            this.dispatchManager.addToQueue(this.baroFilename);
+            this.dispatchManager.addToQueue(this.hrmFilename);
+
+            this.dispatchManager.stop();
 
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
                 let data = cbor.encode({
                     command: "STOP_SESSION",
                     payload: {
                         sessionIdentifier: this.sessionUUID,
-                        endTime: Date.now(),
+                        endTime: time,
                         readingsCount: this.eventCount
                     }
                 });
                 
-                this.dispatch();
-
-                setTimeout(() => {
-                    messaging.peerSocket.send(data);
-                }, 2000);
+                messaging.peerSocket.send(data);
             }
 
-            
             Application.switchToWithState('Summary', this.eventCount);
         } else {
             console.log("[RecordView] Sending START_SESSION...")
@@ -499,7 +436,7 @@ export class RecordView extends View {
                     command: "START_SESSION",
                     payload: {
                         sessionIdentifier: this.sessionUUID,
-                        startTime: Date.now()
+                        startTime: time
                     }
                 });
                 messaging.peerSocket.send(data);
@@ -508,9 +445,11 @@ export class RecordView extends View {
             this.acc.start();
             this.gyro.start();
             this.baro.start();
-            //this.hrm.start();
+            this.hrm.start();
             //this.batt.start();
             //this.mem.start();
+
+            this.dispatchManager.start();
 
             this.running = true;
         }
