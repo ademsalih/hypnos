@@ -42,11 +42,6 @@ export class RecordView extends View {
 
     dispatchManager = new DispatchManager();
 
-    sessionMixedText = $('#sessionMixedText');
-    sessionMixedTextCopy = this.sessionMixedText.getElementById("copy");
-
-    /** These should be joined in some kind of variable **/
-
     sensorFiles = {
         "ACCELEROMETER": {
             counter: 0,
@@ -65,9 +60,6 @@ export class RecordView extends View {
             fileName: `HEARTRATE.${Date.now()}`
         }
     }
-
-
-    /*****************************************************/
     
     onMount(props){
         console.log("[RecordView] onMount()");
@@ -166,17 +158,15 @@ export class RecordView extends View {
             }
         }
 
-        // Do this based on sensor parameter:
-        let elmo = this.sensorFiles[sensor];
+        let file = this.sensorFiles[sensor];
 
-        if (elmo.counter > 8) {
-            this.dispatchManager.addToQueue(elmo.fileName);
-            elmo.fileName = `${sensor}.${Date.now()}`
-            elmo.counter = 0;
+        if (file.counter > 40) {
+            this.dispatchManager.addToQueue(file.fileName);
+            file.fileName = `${sensor}.${Date.now()}`
+            file.counter = 0;
         }
-        this.appendToFile(elmo.fileName, buffer);
-        elmo.counter += 1;
-        /////////////////////////////////////
+        this.appendToFile(file.fileName, buffer);
+        file.counter += 1;
 
         this.eventCount += n;
     }
@@ -187,134 +177,30 @@ export class RecordView extends View {
             this.acc.readings.x,
             this.acc.readings.y,
             this.acc.readings.z
-        ])
+        ]);
     }
 
-    /* accelerometerEventHandler() {
-        let now = Date.now();
-        let n = this.acc.readings.timestamp.length;
-        let count = 4;
-        let size = 8;
-
-        let total = size * count * n;
-        
-        let buffer = new ArrayBuffer(total);
-        let bytes = new Float64Array(buffer);
-
-        let ts = this.adjustTimestamp(this.acc.readings.timestamp, now);
-        
-        for (let i = 0; i < n; i++) {
-            let b = count * i;
-            bytes[b + 0] = ts[i];
-            bytes[b + 1] = this.acc.readings.x[i];
-            bytes[b + 2] = this.acc.readings.y[i];
-            bytes[b + 3] = this.acc.readings.z[i];
-        }
-
-        if (this.accCounter > 8) {
-            this.dispatchManager.addToQueue(this.accFilename);
-            this.accFilename = `ACCELEROMETER.${Date.now()}`
-            this.accCounter = 0;
-        }
-
-        this.appendToFile(this.accFilename, buffer);
-        
-        this.accCounter+=1;
-        this.eventCount += n;
-    } */
-
     gyroscopeEventHandler() {
-        let now = Date.now();
-        let n = this.gyro.readings.timestamp.length;
-        let count = 4;
-        let size = 8;
-
-        let total = size * count * n;
-        
-        let buffer = new ArrayBuffer(total);
-        let bytes = new Float64Array(buffer);
-        
-        let ts = this.adjustTimestamp(this.gyro.readings.timestamp, now);
-        for (let i = 0; i < n; i++) {
-            let base = count * i;
-            bytes[base + 0] = ts[i];
-            bytes[base + 1] = this.gyro.readings.x[i];
-            bytes[base + 2] = this.gyro.readings.y[i];
-            bytes[base + 3] = this.gyro.readings.z[i];
-        }
-
-        if (this.gyroCounter > 8) {
-            this.dispatchManager.addToQueue(this.gyroFilename);
-            this.gyroFilename = `GYROSCOPE.${Date.now()}`
-            this.gyroCounter = 0;
-        }
-
-        this.appendToFile(this.gyroFilename, buffer);
-        
-        this.gyroCounter+=1;
-        this.eventCount += n;
+        this.readingHandler("GYROSCOPE", [
+            this.gyro.readings.timestamp,
+            this.gyro.readings.x,
+            this.gyro.readings.y,
+            this.gyro.readings.z
+        ]);
     }
 
     barometerEventHandler() {
-        let now = Date.now();
-        let n = this.baro.readings.timestamp.length;
-        let count = 2;
-        let size = 8;
-
-        let total = size * count * n;
-        
-        let buffer = new ArrayBuffer(total);
-        let bytes = new Float64Array(buffer);
-        
-        let ts = this.adjustTimestamp(this.baro.readings.timestamp, now);
-
-        for (let i = 0; i < n; i++) {
-            let base = count * i;
-            bytes[base + 0] = ts[i];
-            bytes[base + 1] = this.baro.readings.pressure[i];
-        }
-
-        if (this.baroCounter > 8) {
-            this.dispatchManager.addToQueue(this.baroFilename);
-            this.baroFilename = `BAROMETER.${Date.now()}`
-            this.baroCounter = 0;
-        }
-
-        this.appendToFile(this.baroFilename, buffer);
-        
-        this.baroCounter+=1;
-        this.eventCount += n;
+        this.readingHandler("BAROMETER", [
+            this.baro.readings.timestamp,
+            this.baro.readings.pressure
+        ]);
     }
 
     heartRateEventHandler() {
-        let now = Date.now();
-        let n = this.hrm.readings.timestamp.length;
-        let count = 2;
-        let size = 8;
-
-        let total = size * count * n;
-        
-        let buffer = new ArrayBuffer(total);
-        let bytes = new Float64Array(buffer);
-        
-        let ts = this.adjustTimestamp(this.hrm.readings.timestamp, now);
-
-        for (let i = 0; i < n; i++) {
-            let base = count * i;
-            bytes[base + 0] = ts[i];
-            bytes[base + 1] = this.hrm.readings.heartRate[i];
-        }
-
-        if (this.hrmCounter > 20) {
-            this.dispatchManager.addToQueue(this.hrmFilename);
-            this.hrmFilename = `HEARTRATE.${Date.now()}`
-            this.hrmCounter = 0;
-        }
-
-        this.appendToFile(this.hrmFilename, buffer);
-        
-        this.hrmCounter+=1;
-        this.eventCount += n;
+        this.readingHandler("HEARTRATE", [
+            this.hrm.readings.timestamp,
+            this.hrm.readings.heartRate
+        ]);
     }
 
     adjustTimestamp(timestamps, reference) {
@@ -324,6 +210,71 @@ export class RecordView extends View {
         let lastTs = timestamps[i];
         do { ts.push(reference - lastTs + timestamps[j-i]) } while(i--);
         return ts;
+    }
+
+    /**
+     * This method in invoked when the Start Session button
+     * is pressed and controls the sensors accordingly. 
+     */
+    startSessionButtonHandler = () => {
+        let time = Date.now();
+
+        if (this.running) {
+            this.acc.stop();
+            this.gyro.stop();
+            this.baro.stop();
+            this.hrm.stop();
+            //this.batt.stop();
+            //this.mem.stop();
+
+            this.running = false;
+
+            this.dispatchManager.addToQueue(this.sensorFiles["ACCELEROMETER"].fileName);
+            this.dispatchManager.addToQueue(this.sensorFiles["GYROSCOPE"].fileName);
+            this.dispatchManager.addToQueue(this.sensorFiles["BAROMETER"].fileName);
+            this.dispatchManager.addToQueue(this.sensorFiles["HEARTRATE"].fileName);
+
+            this.dispatchManager.stop();
+
+            if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+                let data = cbor.encode({
+                    command: "STOP_SESSION",
+                    payload: {
+                        sessionIdentifier: this.sessionUUID,
+                        endTime: time,
+                        readingsCount: this.eventCount
+                    }
+                });
+                
+                messaging.peerSocket.send(data);
+            }
+
+            Application.switchToWithState('Summary', this.eventCount);
+        } else {
+            console.log("[RecordView] Sending START_SESSION...")
+            if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
+                let data = cbor.encode({
+                    command: "START_SESSION",
+                    payload: {
+                        sessionIdentifier: this.sessionUUID,
+                        startTime: time
+                    }
+                });
+                messaging.peerSocket.send(data);
+            }
+            
+            this.acc.start();
+            this.gyro.start();
+            this.baro.start();
+            this.hrm.start();
+            //this.batt.start();
+            //this.mem.start();
+
+            this.dispatchManager.start();
+
+            this.running = true;
+        }
+        this.render();
     }
 
     onUnmount(){
@@ -389,71 +340,6 @@ export class RecordView extends View {
                 sessionMixedTextHeader.style.fill = "fb-red"
             }
         }
-    }
-
-    /**
-     * This method in invoked when the Start Session button
-     * is pressed and controls the sensors accordingly. 
-     */
-    startSessionButtonHandler = () => {
-        let time = Date.now();
-
-        if (this.running) {
-            this.acc.stop();
-            this.gyro.stop();
-            this.baro.stop();
-            this.hrm.stop();
-            //this.batt.stop();
-            //this.mem.stop();
-
-            this.running = false;
-
-            this.dispatchManager.addToQueue(this.accFilename);
-            this.dispatchManager.addToQueue(this.gyroFilename);
-            this.dispatchManager.addToQueue(this.baroFilename);
-            this.dispatchManager.addToQueue(this.hrmFilename);
-
-            this.dispatchManager.stop();
-
-            if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-                let data = cbor.encode({
-                    command: "STOP_SESSION",
-                    payload: {
-                        sessionIdentifier: this.sessionUUID,
-                        endTime: time,
-                        readingsCount: this.eventCount
-                    }
-                });
-                
-                messaging.peerSocket.send(data);
-            }
-
-            Application.switchToWithState('Summary', this.eventCount);
-        } else {
-            console.log("[RecordView] Sending START_SESSION...")
-            if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
-                let data = cbor.encode({
-                    command: "START_SESSION",
-                    payload: {
-                        sessionIdentifier: this.sessionUUID,
-                        startTime: time
-                    }
-                });
-                messaging.peerSocket.send(data);
-            }
-            
-            this.acc.start();
-            this.gyro.start();
-            this.baro.start();
-            this.hrm.start();
-            //this.batt.start();
-            //this.mem.start();
-
-            this.dispatchManager.start();
-
-            this.running = true;
-        }
-        this.render();
     }
 
 }

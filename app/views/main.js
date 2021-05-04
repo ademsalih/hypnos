@@ -1,6 +1,6 @@
 import { Application } from '../lib/view';
 import { View, $at } from '../lib/view'
-import { listDirSync } from "fs";
+import { listDirSync, unlinkSync } from "fs";
 
 const $ = $at( '#main' );
 
@@ -18,14 +18,15 @@ export class Main extends View {
         const settingsButton = $( '#settingsButton' );
         settingsButton.addEventListener("click", this.settingsButtonClickHandler);
 
-        let n = 0;
         const listDir = listDirSync("/private/data");
         let dirIter = null;
         while((dirIter = listDir.next()) && !dirIter.done) {
-            n+=1;
+            let name = dirIter.value;
+            console.log(name)
+            /* if (!name.includes("preferences")) {
+                unlinkSync(dirIter.value);
+            } */
         }
-
-        console.log(`${n} files`)
     }
 
     onPropChange(props) {

@@ -5,9 +5,9 @@ export default class DispatchManager {
 
     files = [];
     filesLimit = 40;
-    delay = 400;
-    firstDelay = 20;
-    dispatchRate = 20000;
+    delay = 500;
+    firstDelay = 30;
+    dispatchRate = 60000;
     dispatchInterval;
 
     constructor() {
@@ -71,6 +71,23 @@ export default class DispatchManager {
         this.files = this.files.splice(this.files.length);
 
         console.log(`Dispatching ${dispatchQueue.length} items...`)
+
+        outbox.enumerate().then((files) => {
+            console.log(`Files to be sent: ${files.length}`)
+            
+            files.map((file) => {
+                console.log(`name=${file.name} readyState=${file.readyState}`)
+                
+                // If available in the file system, reschedule send
+                if (existsSync(`/private/data/${file.name}`)) {
+                    console.log(`File ${file.name} exists on disk, rescheduling...`)
+                    this.addToQueue(file.name);
+                } else {
+                    console.log(`File ${file.name} does NOT exist on disk`)
+                }
+                file.cancel();
+            })
+        })
         
         for (let i = 0; i < dispatchQueue.length; i++) {
 
@@ -84,25 +101,11 @@ export default class DispatchManager {
 
                 }).catch((error) => {
                     console.log(`Failed to schedule transfer: ${error}`);
-
-                    outbox.enumerate().then((files) => {
-                        console.log(`Files to be sent: ${files.length}`)
-                        
-                        files.map((file) => {
-                            console.log(`name=${file.name} readyState=${file.readyState}`)
-                            
-                            // If available in the file system, reschedule send
-                            if (existsSync(`/private/data/${file.name}`)) {
-                                console.log(`File ${file.name} exists on disk, rescheduling...`)
-                                this.addToQueue(dispatchQueue[i]);
-                            }
-                            file.cancel();
-                        })
-                    })
                 })
                 
             }, this.delay*i + this.firstDelay);
         }
+        
     }
 
 }

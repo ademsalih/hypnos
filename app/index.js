@@ -75,6 +75,6 @@ setInterval(() => {
     } else {
         console.log(data);
     }
-}, 2000);
+}, 1000);
 
 HypnosApplication.start('Main');
