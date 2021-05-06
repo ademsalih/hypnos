@@ -26,6 +26,7 @@ var sessionInProgress = false;
 localStorage.setItem("sessionBuffer", JSON.stringify({buffer:[]}));
 
 let uuid = localStorage.getItem("sessionUUID");
+console.log(`UUID on launch: ${uuid}`);
 
 websocket.setOnMessage((message) => {
     console.log(`Android Server says: ${message}`)
@@ -185,6 +186,8 @@ messaging.peerSocket.addEventListener("message", (evt) => {
             uuid = message.payload.sessionIdentifier;
             localStorage.setItem("sessionUUID", message.payload.sessionIdentifier);
             
+            console.log(`UUID on INIT_SESSION: ${uuid}`);
+
             websocket.send(JSON.stringify(message));
             break;
         case "START_SESSION":

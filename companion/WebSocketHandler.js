@@ -25,15 +25,13 @@ export class WebSocketHandler {
         const uri = `ws://${this._host}:${this._port}/`
         this.websocket = new WebSocket(uri);
 
-
         this.websocket.addEventListener("open", () => {
             console.log("[WebSocketHandler] onOpen()")
             this._onOpenHandler();
-            console.log("CONNECTED");
         });
 
         this.websocket.addEventListener("close", (e) => {
-            console.log(`[WebSocketHandler] Close, code: ${e.code} ${e.reason}`);
+            console.log(`[WebSocketHandler] Close, code: ${e.code}`);
             this._onCloseHandler();
 
             switch (e.code) {
@@ -41,28 +39,24 @@ export class WebSocketHandler {
                     break;
                 default:
                     if (inside) {
-                        console.log("inside")
                         if (this._reconnect) {
-                            console.log("reconnect")
                             this.reConnect();
                         }
                     } else {
-                        console.log("outside")
                         this._reconnect = true;
                         this.reConnect();
                     }
                     break;
             }
-
-        });
-
-        this.websocket.addEventListener("error", (e) => {
-            console.log(`[WebSocketHandler] Error: ${e.data}`);
         });
 
         this.websocket.addEventListener("message", (e) => {
             this.onMessage(e.data);
         })
+
+        this.websocket.addEventListener("error", (e) => {
+            console.log(`[WebSocketHandler] Error: ${e.data}`);
+        });
     }
 
     reConnect() {
