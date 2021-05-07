@@ -1,3 +1,12 @@
 import { Accelerometer } from "accelerometer";
-const accelerometer = new Accelerometer();
-export default accelerometer;
+
+export const accelerometer = () => {
+    const sensor = new Accelerometer();
+    const identifier = "ACCELEROMETER";
+
+    return {
+        sensor: sensor,
+        identifier: identifier
+    }
+}
+

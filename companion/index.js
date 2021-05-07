@@ -6,6 +6,7 @@ import { localStorage } from "local-storage";
 import { me as companion } from "companion";
 import { app } from "peer";
 import { createReading } from "./createReading";
+import { SENSOR_DEFINITIONS } from "../common/sensorDefinitions";
 
 /* app.addEventListener("readystatechange", () => {
     console.log("Hypnos closed on Ionic...")
@@ -47,40 +48,7 @@ messaging.peerSocket.addEventListener("open", (evt) => {
     console.log("Ready to send or receive messages");
 });
 
-let config = [
-    {
-        sensorName: "ACCELEROMETER",
-        typeCount: 3,
-        types: [
-            'X',
-            'Y',
-            'Z'
-        ]
-    },
-    {
-        sensorName: "GYROSCOPE",
-        typeCount: 3,
-        types: [
-            'X',
-            'Y',
-            'Z'
-        ]
-    },
-    {
-        sensorName: "BAROMETER",
-        typeCount: 1,
-        types: [
-            'PASCAL'
-        ]
-    },
-    {
-        sensorName: "HEARTRATE",
-        typeCount: 1,
-        types: [
-            'BPM'
-        ]
-    }
-]
+let config = SENSOR_DEFINITIONS;
 
 async function processAllFiles() {
     let file;
@@ -89,29 +57,18 @@ async function processAllFiles() {
 
         let bytes = new Float64Array(payload);
 
-        let fileSize = file.length;
+        let sensor = ((file.name).split('.'))[0];
 
-        let fileName = file.name;
-
-        let sensor = (fileName.split('.'))[0];
-
-        const sensorElement = (config.filter( i => i.sensorName == sensor))[0];
-
-        //console.log(`sensorElement: ${JSON.stringify(sensorElement)}`)
+        const sensorElement = (config.filter(i => i.sensor == sensor))[0];
 
         let typeCount = sensorElement.typeCount + 1;
-        //console.log(`typeCount: ${typeCount}`)
 
         let types = sensorElement.types;
-        //console.log(`types: ${types}`)
 
-        let times = fileSize/(8*typeCount);
-        //console.log(`times: ${times}`)
+        let times = (file.length)/(8*typeCount);
 
         let data = [[]]
         types.forEach(i => data.push([]))
-
-        //console.log(`data: ${JSON.stringify(data)}`)
 
         for (let i = 0; i < times; i++) {
             for (let k = 0; k < typeCount; k++) {
@@ -124,26 +81,13 @@ async function processAllFiles() {
             }
         }
 
-        //console.log(`data after: ${JSON.stringify(data)}`)
-
-        let reading = createReading(types, data.slice(1, typeCount));
-
-        let toSend = {
-            command: "ADD_READING",
-            payload: {
-                sessionIdentifier: uuid,
-                sensorIdentifier: sensor,
-                timestamps: data[0],
-                data: reading
-            }
-        }
+        let reading = createReading(uuid, sensor, types, data);
 
         if (!isBuffering) {
-            websocket.send(JSON.stringify(toSend));
+            websocket.send(JSON.stringify(reading));
         } else {
             let sessionBuffer = JSON.parse(localStorage.getItem("sessionBuffer"));
-            console.log(`BUFFERING, buffer size: ${sessionBuffer.buffer.length}, buffering element: ${JSON.stringify(toSend)}`);
-            sessionBuffer.buffer.push(toSend);
+            sessionBuffer.buffer.push(reading);
             localStorage.setItem("sessionBuffer", JSON.stringify(sessionBuffer));
         }
     }

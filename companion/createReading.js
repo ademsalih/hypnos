@@ -1,4 +1,6 @@
-export const createReading = (types, items) => {
+export const createReading = (uuid, sensor, types, data) => {
+
+    let items = data.slice(1, data.length);
 
     let values = []
 
@@ -9,5 +11,13 @@ export const createReading = (types, items) => {
         })
     });
 
-    return values;
+    return {
+        command: "ADD_READING",
+        payload: {
+            sessionIdentifier: uuid,
+            sensorIdentifier: sensor,
+            timestamps: data[0],
+            data: values
+        }
+    }
 }

@@ -1,3 +1,12 @@
 import { Gyroscope } from "gyroscope"
-const gyroscope = new Gyroscope();
-export default gyroscope;
+
+export const gyroscope = () => {
+    const sensor = new Gyroscope();
+    const identifier = "GYROSCOPE";
+
+    return {
+        sensor: sensor,
+        identifier: identifier
+    }
+}
+

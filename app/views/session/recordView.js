@@ -13,19 +13,21 @@ import PreferencesManager from '../../lib/PreferenceManager';
 import * as cbor from "cbor";
 import { me as device } from "device";
 import * as messaging from "messaging";
-import { outbox } from "file-transfer";
 
 import { memory } from "system";
 import { Memory } from '../../sensor/sensors/MemorySensor';
 
 import * as fs from "fs";
 import DispatchManager from '../../lib/DispatchManager';
+import { SensorManager } from '../../sensor/SensorManager';
 
 const $ = $at( '#recordView' );
 
 export class RecordView extends View {
 
     el = $();
+
+    batchLimit = 40;
 
     running = false;
     connected = false;
@@ -67,24 +69,26 @@ export class RecordView extends View {
         
         const prefManager = new PreferencesManager();
 
+        const sm = new SensorManager();
+
         const accF = prefManager.getSensorFrequencyFor("ACCELEROMETER");
-        this.acc.setOptions({ frequency: 20, batch: 40 });
+        this.acc.setOptions({ frequency: accF.frequency, batch: accF.frequency*2 });
 
         const baroF = prefManager.getSensorFrequencyFor("BAROMETER");
-        this.baro.setOptions({ frequency: 20, batch: 40 });
+        this.baro.setOptions({ frequency: baroF.frequency, batch: baroF.frequency*2 });
 
         const gyroF = prefManager.getSensorFrequencyFor("GYROSCOPE")
-        this.gyro.setOptions({ frequency: 20, batch: 40 });
+        this.gyro.setOptions({ frequency: gyroF.frequency, batch: gyroF.frequency*2 });
 
         const hrmF = prefManager.getSensorFrequencyFor("HEARTRATE");
-        this.hrm.setOptions({ frequency: 1, batch: 2 });
+        this.hrm.setOptions({ frequency: hrmF.frequency, batch: hrmF.frequency*2 });
+
+        /* const battF = prefManager.getSensorFrequencyFor("BATTERY");
+        this.batt.setOptions({ frequency: battF.frequency }) */
 
         /* const memF = prefManager.getSensorFrequencyFor("MEMORY");
         this.mem.setOptions({ frequency: 1, batch: 20 }) */
-
-        /* const battF = prefManager.getSensorFrequencyFor("BATTERY");
-        this.batt.setOptions({ frequency: battF.frequency })*/
-
+        
         const sessionControlButton = $('#sessionControlButton');
         sessionControlButton.addEventListener("click", this.startSessionButtonHandler);
 
@@ -97,39 +101,23 @@ export class RecordView extends View {
         this.hrm.onreading = this.heartRateEventHandler.bind(this);
         //this.batt.onreading = this.batteryEventHandler.bind(this);
         //this.mem.onreading = this.memoryEventHandler.bind(this);
-        
+
+        let enabledSensors = prefManager.getSensors().reduce((result, i) => {
+            if (i.enabled) {
+                result.push({"name": i.sensor, "frequency": i.sampling.rate})
+            }
+            return result;
+        }, []);
+
+        console.log(JSON.stringify(enabledSensors))
+
         if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
             let data = cbor.encode({
                 command: "INIT_SESSION",
                 payload: {
                     sessionIdentifier: this.sessionUUID,
                     deviceModel: device.modelName,
-                    activeSensors: [
-                        {
-                            "name": "ACCELEROMETER",
-                            "frequency": accF.frequency
-                        },
-                        {
-                            "name": "GYROSCOPE",
-                            "frequency": gyroF.frequency
-                        },
-                        {
-                            "name": "HEARTRATE",
-                            "frequency": hrmF.frequency
-                        },
-                        {
-                            "name": "BAROMETER",
-                            "frequency": baroF.frequency
-                        }/* ,
-                        {
-                            "name": "BATTERY",
-                            "frequency": battF.frequency
-                        },
-                        {
-                            "name": "MEMORY",
-                            "frequency": memF.frequency
-                        } */
-                    ]
+                    activeSensors: enabledSensors
                 }
             })
             messaging.peerSocket.send(data);
@@ -160,7 +148,7 @@ export class RecordView extends View {
 
         let file = this.sensorFiles[sensor];
 
-        if (file.counter > 40) {
+        if (file.counter > this.batchLimit) {
             this.dispatchManager.addToQueue(file.fileName);
             file.fileName = `${sensor}.${Date.now()}`
             file.counter = 0;

@@ -1,5 +1,5 @@
 import { memory } from "system";
-import { GenericSensor } from "./GenericSensor";
+import { GenericSensor } from "../GenericSensor";
 
 export class Memory extends GenericSensor {
 

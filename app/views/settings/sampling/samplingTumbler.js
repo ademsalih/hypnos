@@ -1,14 +1,12 @@
 import { Application } from '../../../lib/view';
 import { View, $at } from '../../../lib/view'
 import PreferencesManager from '../../../lib/PreferenceManager';
-import FileHandler from '../../../lib/FileHandler';
 
 const $ = $at( '#samplingTumbler' );
 
 export class SamplingTumbler extends View {
 
     el = $();
-    fileHandler = new FileHandler();
 
     prefManager;
     tumbler;

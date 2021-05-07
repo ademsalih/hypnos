@@ -15,7 +15,7 @@ export default class PreferencesManager {
 
     static createPreferencesIfNotExists() {
         if (!existsSync("/private/data/preferences.json")) {
-            const sensorDefLoader = () => import("../sensor/sensorDefinitions");
+            const sensorDefLoader = () => import("../../common/sensorDefinitions");
             sensorDefLoader().then((module) => {
                 const { SENSOR_DEFINITIONS } = module;
                 let readSensorList = []
