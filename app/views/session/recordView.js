@@ -69,8 +69,6 @@ export class RecordView extends View {
         
         const prefManager = new PreferencesManager();
 
-        const sm = new SensorManager();
-
         const accF = prefManager.getSensorFrequencyFor("ACCELEROMETER");
         this.acc.setOptions({ frequency: accF.frequency, batch: accF.frequency*2 });
 
