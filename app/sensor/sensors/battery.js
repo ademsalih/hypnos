@@ -1,10 +1,17 @@
-import { battery } from "power";
-import { GenericSensor } from "../GenericSensor";
+import { BatterySensor } from "../virtual/BatterySensor";
 
-export class Battery extends GenericSensor {
+export const battery = () => {
+    const sensor = new BatterySensor();
 
-    getReading() {
-        return battery.chargeLevel;
+    const identifier = "BATTERY";
+
+    const properties = [
+        "val"
+    ]
+
+    return {
+        sensor: sensor,
+        identifier: identifier,
+        properties: properties
     }
-
 }

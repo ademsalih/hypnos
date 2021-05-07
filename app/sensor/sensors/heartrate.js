@@ -1,3 +1,17 @@
 import { HeartRateSensor } from "heart-rate";
-const heartRate = new HeartRateSensor();
-export default heartRate;
+
+export const heartrate = () => {
+    const sensor = new HeartRateSensor();
+
+    const identifier = "HEARTRATE";
+
+    const properties = [
+        "heartRate"
+    ]
+
+    return {
+        sensor: sensor,
+        identifier: identifier,
+        properties: properties
+    }
+}

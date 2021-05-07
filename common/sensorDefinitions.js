@@ -15,9 +15,9 @@ export const SENSOR_DEFINITIONS = [
         "displayName": "Accelerometer",
         "typeCount": 3,
         "types": [
-            'X',
-            'Y',
-            'Z'
+            "X",
+            "Y",
+            "Z"
         ]
     },
     {
@@ -26,7 +26,7 @@ export const SENSOR_DEFINITIONS = [
         "maxFrequency": 1,
         "typeCount": 1,
         "types": [
-            'BPM'
+            "BPM"
         ]
     },
     {
@@ -34,7 +34,7 @@ export const SENSOR_DEFINITIONS = [
         "displayName": "Battery",
         "typeCount": 1,
         "types": [
-            'PERCENT'
+            "PERCENT"
         ]
     },
     {
@@ -42,9 +42,9 @@ export const SENSOR_DEFINITIONS = [
         "displayName": "Gyroscope",
         "typeCount": 3,
         "types": [
-            'X',
-            'Y',
-            'Z'
+            "X",
+            "Y",
+            "Z"
         ]
     },
     {
@@ -52,7 +52,7 @@ export const SENSOR_DEFINITIONS = [
         "displayName": "Memory",
         "typeCount": 1,
         "types": [
-            'PERCENT'
+            "PERCENT"
         ]
     },
     {
@@ -60,7 +60,7 @@ export const SENSOR_DEFINITIONS = [
         "displayName": "Barometer",
         "typeCount": 1,
         "types": [
-            'PASCAL'
+            "PASCAL"
         ]
     }
 ]
