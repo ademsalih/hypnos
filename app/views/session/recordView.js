@@ -47,7 +47,7 @@ export class RecordView extends View {
 
         enabledSensors.forEach((e) => {
             this.sensorFiles[e.name] = {
-                counter: this.batchLimit + 1,
+                counter: 0,
                 fileName: `${e.name}.${Date.now()}`
             }
         });
@@ -74,9 +74,7 @@ export class RecordView extends View {
     }
 
     readingHandler(sensor, values) {
-        console.log("readingHandler")
         let now = Date.now();
-        console.log(JSON.stringify(values))
 
         let n = (values[0]).length;
         let count = values.length;

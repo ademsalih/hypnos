@@ -22,10 +22,9 @@ export class Main extends View {
         let dirIter = null;
         while((dirIter = listDir.next()) && !dirIter.done) {
             let name = dirIter.value;
-            console.log(name)
-            /* if (!name.includes("preferences")) {
-                unlinkSync(dirIter.value);
-            } */
+            if (name.indexOf("preferences.json") === -1) {
+                unlinkSync(dirIter.value);8
+            }
         }
     }
 

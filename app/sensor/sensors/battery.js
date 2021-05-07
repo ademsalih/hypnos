@@ -1,17 +1,9 @@
 import { BatterySensor } from "../virtual/BatterySensor";
 
 export const battery = () => {
-    const sensor = new BatterySensor();
-
-    const identifier = "BATTERY";
-
-    const properties = [
-        "val"
-    ]
-
     return {
-        sensor: sensor,
-        identifier: identifier,
-        properties: properties
+        sensor: new BatterySensor(),
+        identifier: "BATTERY",
+        properties: ["val"]
     }
 }
