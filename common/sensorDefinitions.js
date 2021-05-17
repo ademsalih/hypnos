@@ -21,6 +21,16 @@ export const SENSOR_DEFINITIONS = [
         ]
     },
     {
+        "sensor": "GYROSCOPE",
+        "displayName": "Gyroscope",
+        "typeCount": 3,
+        "types": [
+            "X",
+            "Y",
+            "Z"
+        ]
+    },
+    {
         "sensor": "HEARTRATE",
         "displayName": "Heart Rate",
         "maxFrequency": 1,
@@ -35,16 +45,6 @@ export const SENSOR_DEFINITIONS = [
         "typeCount": 1,
         "types": [
             "PERCENT"
-        ]
-    },
-    {
-        "sensor": "GYROSCOPE",
-        "displayName": "Gyroscope",
-        "typeCount": 3,
-        "types": [
-            "X",
-            "Y",
-            "Z"
         ]
     },
     {

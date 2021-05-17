@@ -15,7 +15,7 @@ export class SensorManager {
 
             if (enabled) {
                 const f = this.prefManager.getSensorFrequencyFor(identifier);
-                sensor.setOptions({ frequency: f.frequency, batch: f.frequency*2 });
+                sensor.setOptions({ frequency: f.frequency, batch: f.frequency < 1 ? 1 : Math.round(f.frequency*2) });
                 
                 sensor.onreading = () => {
                     let data = [sensor.readings.timestamp];

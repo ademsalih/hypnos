@@ -121,8 +121,15 @@ export class RecordView extends View {
 
         if (this.running) {
             this.sensorManager.stopAllSensors();
-            this.dispatchManager.stop();
             this.running = false;
+
+            let keys = Object.keys(this.sensorFiles)
+            keys.forEach((key) => {
+                this.dispatchManager.addToQueue(this.sensorFiles[key].fileName);
+            });
+            
+            let rem = this.dispatchManager.getQueueCount();
+            this.dispatchManager.stop();
 
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
                 let data = cbor.encode({
@@ -130,7 +137,8 @@ export class RecordView extends View {
                     payload: {
                         sessionIdentifier: this.sessionUUID,
                         endTime: time,
-                        readingsCount: this.eventCount
+                        readingsCount: this.eventCount,
+                        remainingFiles: rem
                     }
                 });
                 

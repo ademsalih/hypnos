@@ -108,4 +108,8 @@ export default class DispatchManager {
         
     }
 
+    getQueueCount() {
+        return this.files.length;
+    }
+
 }
