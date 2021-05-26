@@ -33,7 +33,6 @@ export const SENSOR_DEFINITIONS = [
     {
         "sensor": "HEARTRATE",
         "displayName": "Heart Rate",
-        "maxFrequency": 1,
         "typeCount": 1,
         "types": [
             "BPM"

@@ -119,6 +119,8 @@ messaging.peerSocket.addEventListener("message", (evt) => {
                             websocket.send(JSON.stringify(item));
                         });
                     }
+                } else {
+                    websocket.send(JSON.stringify(message));
                 }
             })
             websocket.start();

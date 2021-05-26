@@ -12,6 +12,7 @@ import * as messaging from "messaging";
 import * as cbor from "cbor";
 import { me as device } from "device";
 import { me } from "appbit";
+import { battery } from "power";
 import PreferencesManager from './lib/PreferenceManager';
 
 class HypnosApplication extends Application {
@@ -39,8 +40,9 @@ class HypnosApplication extends Application {
             if (messaging.peerSocket.readyState === messaging.peerSocket.OPEN) {
                 let data = cbor.encode({
                     command: "START_SEARCH",
-                    data: {
-                        modelName: device.modelName
+                    payload: {
+                        modelName: device.modelName,
+                        battery: battery.chargeLevel
                     }
                 });
                 messaging.peerSocket.send(data);
